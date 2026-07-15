@@ -653,7 +653,8 @@ export default function MonitorPage() {
           </div>
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider">Verdict</div>
-            <div className="text-red-400 font-bold text-xs md:text-sm mt-0.5">
+            <div className={`font-bold text-xs md:text-sm mt-0.5 ${!isDataLoaded? "text-gray-400": 
+              okCount < 8 ? "text-red-400" : "text-green-400"}`}>
               {isDataLoaded ? (okCount < 8) ? "REJECT" : "PASS" : "..."} 
             </div>
           </div>
