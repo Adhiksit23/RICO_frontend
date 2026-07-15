@@ -654,7 +654,7 @@ export default function MonitorPage() {
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider">Verdict</div>
             <div className="text-red-400 font-bold text-xs md:text-sm mt-0.5">
-              {isDataLoaded ? "PASS" : "..."} 
+              {isDataLoaded ? (okCount < 8) ? "REJECT" : "PASS" : "..."} 
             </div>
           </div>
           <div>
