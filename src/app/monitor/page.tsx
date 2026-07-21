@@ -31,22 +31,36 @@ type MonitorData = [MonitorValues, CalibrationValues];
 const base_api = "https://outspoken-pandemic-surfer.ngrok-free.dev";
 
 const parameterMap = [
-  { label: "Cooling Time", key: "CURING TIME", unit: "s" },
+  { label: "Curing Time", key: "CURING TIME", unit: "s" },
   { label: "Spray Time", key: "SPRAY TIME", unit: "s" },
+  { label: "Speed 1", key: "V1", unit: "m/s" },
   { label: "Speed 2", key: "V2", unit: "m/s" },
+  { label: "Speed 3", key: "V3", unit: "m/s" },
   { label: "Speed 4", key: "V4", unit: "m/s" },
   { label: "Acc Position", key: "ACCEL. POINT", unit: "mm" },
   { label: "Deacc Position", key: "DEACEL. POINT", unit: "mm" },
   { label: "Intensification Time", key: "INTEN. TIME", unit: "msec" },
   { label: "Metal Pressure", key: "METAL PRESS.", unit: "MPa" },
   { label: "Biscuit Thickness", key: "BISCUIT THICKNESS", unit: "mm" },
-  { label: "Clamp Force", key: "CLAMP FORCE", unit: "%" },
+  { label: "Clamp Force PCT", key: "CLAMP FORCE", unit: "%" },
+  { label: "Clamp Tonnage", key: "CLAMP TONNAGE", unit: "T" },
   { label: "Metal Temperature", key: "FURNACE METAL TEMP.", unit: "°C" },
+  { label: "Metal Preassure", key: "METAL PRESS.", unit: "MPa" },
+  { label: "Pouring Time", key: "POURING TIME", unit: "s" },
+  { label: "Die Core Open Time", key: "DIE OPEN CORE OUT TIME", unit: "s" },
+  { label: "Die Core Close Time", key: "DIE-CLOSE CORE IN TIME", unit: "s" },
+  { label: "Ejector Time", key: "EJECTOR TIME", unit: "s" },
+  { label: "Extract Time", key: "EXTRACT TIME", unit: "s" },
+  { label: "Intensification Time", key: "INTEN. TIME", unit: "ms" },
+  { label: "Intensification Acc. Pressure", key: "INTENSIFICATION ACC. PRESSURE", unit: "MPa" },
+  { label: "Shot Acc. Pressure", key: "SHOT ACC. PRESSURE", unit: "MPa" },
+  { label: "Shot Fwd Time", key: "SHOT FWD TIME", unit: "s" },
+
 ];
 
 export default function MonitorPage() {
   const [selectedDie, setSelectedDie] = useState("S14");
-  const dies = ["S14", "S15", "S16"];
+  const dies = ["S14", "S16", "S17"];
 
   const [predictionData, setPredictionData] = useState<PredictionData>({
     non_filling: 0,
@@ -111,7 +125,7 @@ export default function MonitorPage() {
     ? parameterMap.map((item) => {
         const value = Number(raw[item.key] ?? 0);
         const range = calibration[item.key] || { lower_tolerance: 0, upper_tolerance: 0 };
-        const isOk = value >= range.lower_tolerance && value <= range.upper_tolerance;
+        const isOk = (value >= range.lower_tolerance) && (value <= range.upper_tolerance);
 
         return {
           name: item.label,
@@ -173,8 +187,8 @@ export default function MonitorPage() {
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider">Verdict</div>
             <div className={`font-bold text-xs md:text-sm mt-0.5 ${!isDataLoaded? "text-gray-400": 
-              okCount < 8 ? "text-red-400" : "text-green-400"}`}>
-              {isDataLoaded ? (okCount < 8) ? "REJECT" : "PASS" : "..."} 
+              (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
+              {isDataLoaded ? (totalParamsCount - okCount > 3) ? "REJECT" : "PASS" : "..."} 
             </div>
           </div>
           <div>
