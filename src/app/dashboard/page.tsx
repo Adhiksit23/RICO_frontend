@@ -4,6 +4,8 @@
 import DefectPieChart from "@/components/DefectPieChart";
 import { useEffect, useState } from "react";
 
+const base_api = "https://outspoken-pandemic-surfer.ngrok-free.dev";
+
 export default function DashboardPage() {
   const defects = [
     {
@@ -78,7 +80,9 @@ export default function DashboardPage() {
 });
 
 useEffect(() => {
-  fetch("http://127.0.0.1:8000/api/dashboard/summary")
+  fetch(`${base_api}/api/dashboard/summary`, {
+  headers: { "ngrok-skip-browser-warning": "true" },})
+
     .then((res) => res.json())
     .then((data) => {
       setSummary(data);
