@@ -42,6 +42,11 @@ const getUnit = (key: string): string => {
   return "";
 };
 
+type SummaryData = {
+  samples_analyzed: number;
+};
+
+
 const safeParseNumber = (val: number | string | null | undefined): string => {
   if (val === null || val === undefined) return "0.00";
   const num = Number(val);
@@ -53,6 +58,7 @@ export default function CalibrationPage() {
   const [latestParams, setLatestParams] = useState<Record<string, string>>({});
   const [latestRanges, setLatestRanges] = useState<Record<string, { min_range?: string; max_range?: string }>>({});
   const [isCalculated, setIsCalculated] = useState(false); // New toggle state
+  const [summary, setSummary] = useState<SummaryData>({ samples_analyzed: 0 });
   
   const [baselineSnapshot, setBaselineSnapshot] = useState<Record<string, string>>({});
   const [baselineRanges, setBaselineRanges] = useState<
@@ -145,6 +151,9 @@ export default function CalibrationPage() {
       
       
       setRanges(data.ranges || {});
+      setSummary({samples_analyzed: data.samples_analyzed || 0,});
+      console.log(data.samples_analyzed)
+      
 
       const mathInputs: Record<string, string> = {};
       const rangeInputs: Record<string, { min_range: string; max_range: string }> = {};
@@ -162,7 +171,6 @@ export default function CalibrationPage() {
       });
       setLatestParams(mathInputs);
       setLatestRanges(rangeInputs);
-      console.log(rangeInputs)
       setIsCalculated(true); // Enable calculated view
 
       setStatusMessage("Calculated optimized windows successfully.");
@@ -177,7 +185,7 @@ export default function CalibrationPage() {
   };
 
   const machines = ["UBE 850T-1", "UBE 850T-2", "UBE 850T-3"];
-  const dies = ["S14", "S15", "S16"];
+  const dies = ["S14", "S16", "S17"];
   const calculatedRows = useMemo(() => Object.entries(ranges), [ranges]);
 
   const handleChange = (key: string, value: string) => {
@@ -247,7 +255,8 @@ export default function CalibrationPage() {
   if (isInitialLoading) {
     return (
       <div className="bg-[#07111F] min-h-screen w-full flex items-center justify-center flex-col gap-4">
-        <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin">
+        </div>
         <p className="text-cyan-400 font-semibold tracking-wide animate-pulse">Loading Latest Configuration...</p>
       </div>
     );
@@ -258,6 +267,17 @@ export default function CalibrationPage() {
       <div className="mb-8">
         <h1 className="text-2xl md:text-[38px] font-bold">Machine Calibration</h1>
       </div>
+      
+      {/* SUMMARY STATS - Single Card */}
+      <div className="mb-6">
+        <div className="bg-[#121B2B] border border-[#1F2937] rounded-xl p-5 md:p-6 shadow-sm inline-block min-w-[250px]">
+          <div className="text-[11px] uppercase tracking-[2px] text-gray-500 mb-1.5">Samples Analyzed</div>
+          <div className="text-white text-3xl font-bold">
+             {summary.samples_analyzed.toLocaleString()}
+          </div>
+        </div>
+      </div>
+      
       <div className="mb-8 flex flex-wrap gap-4 items-end justify-between">
         <div className="flex flex-wrap gap-4">
           <select value={selectedMachine} onChange={(e) => setSelectedMachine(e.target.value)} className="bg-[#121B2B] border border-[#1F2937] rounded-lg px-4 py-3 text-sm outline-none cursor-pointer">
