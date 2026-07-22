@@ -125,6 +125,7 @@ export default function CalibrationPage() {
       setBaselineRanges(toleranceRanges);
       setKeyMap(mapping);
       setIsCalculated(false); // Reset toggle when fetching latest
+      setSummary({samples_analyzed: 0,});
     } catch (err) {
       console.error("Failed to fetch latest DB calibration", err);
     }
