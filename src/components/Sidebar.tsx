@@ -16,10 +16,6 @@ const menuItems = [
     name: "Calibrate",
     path: "/calibration",
   },
-  {
-    name: "Settings",
-    path: "/settings",
-  },
 ];
 
 export default function Sidebar() {
