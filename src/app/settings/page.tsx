@@ -21,12 +21,32 @@ export default function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleIoTStart = () => {
-    setStatus("IoT Data Fetching Started...");
+  const handleIoTStart = async () => {
+    setIsLoading(true);
+    setStatus("Starting IoT data stream...");
+    try {
+      const res = await SettingsService.updateIoTStreamStatus("start");
+      setStatus(res.message || "IoT Data Fetching Started.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Failed to start IoT stream.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleIoTStop = () => {
-    setStatus("IoT Data Fetching Stopped");
+  const handleIoTStop = async () => {
+    setIsLoading(true);
+    setStatus("Stopping IoT data stream...");
+    try {
+      const res = await SettingsService.updateIoTStreamStatus("stop");
+      setStatus(res.message || "IoT Data Fetching Stopped.");
+    } catch (err) {
+      console.error(err);
+      setStatus("Failed to stop IoT stream.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTrain = async () => {
@@ -379,15 +399,17 @@ export default function SettingsPage() {
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={handleIoTStart}
-              className="flex-1 bg-cyan-500 hover:bg-cyan-400 transition-colors text-black font-extrabold px-5 py-3 rounded-lg text-xs uppercase tracking-wider cursor-pointer text-center"
+              disabled={isLoading}
+              className="flex-1 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 transition-colors text-black font-extrabold px-5 py-3 rounded-lg text-xs uppercase tracking-wider cursor-pointer text-center"
             >
-              START FETCHING IoT
+              {isLoading ? "WORKING..." : "START FETCHING IoT"}
             </button>
             <button
               onClick={handleIoTStop}
-              className="flex-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors font-extrabold px-5 py-3 rounded-lg text-xs uppercase tracking-wider cursor-pointer text-center"
+              disabled={isLoading}
+              className="flex-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 disabled:opacity-50 transition-colors font-extrabold px-5 py-3 rounded-lg text-xs uppercase tracking-wider cursor-pointer text-center"
             >
-              STOP IoT
+              {isLoading ? "WORKING..." : "STOP IoT"}
             </button>
           </div>
         </div>
