@@ -1,12 +1,24 @@
 "use client";
 
-
 import DefectPieChart from "@/components/DefectPieChart";
-import { useEffect, useState } from "react";
+import SummaryCard from "@/components/SummaryCard";
+import CustomDropdown from "@/components/CustomDropdown";
 
-const base_api = "https://outspoken-pandemic-surfer.ngrok-free.dev";
+import { useEffect, useState } from "react";
+import { DashboardService } from "@/services";
+
 
 export default function DashboardPage() {
+  const [selectedClient, setSelectedClient] = useState("Suzuki");
+  const [selectedMachine, setSelectedMachine] = useState("UBE 850T-1");
+  const [selectedDie, setSelectedDie] = useState("S-16");
+  const [selectedPeriod, setSelectedPeriod] = useState("Last Month");
+
+  const clients = ["Suzuki", "Hero", "Bajaj", "TVS"];
+  const machines = ["UBE 850T-1", "UBE 850T-2", "UBE 850T-3"];
+  const dies = ["S-14", "S-16", "S-17", "S-18"];
+  const periods = ["Today", "Last 7 Days", "Last Month", "Year to Date"];
+
   const defects = [
     {
       name: "Non-filling",
@@ -73,212 +85,182 @@ export default function DashboardPage() {
       width: "1.2%",
     },
   ];
+
   const [summary, setSummary] = useState({
-  total_parts: 0,
-  defective_parts: 0,
-  defect_rate: 0,
-});
+    total_parts: 0,
+    defective_parts: 0,
+    defect_rate: 0,
+  });
 
-useEffect(() => {
-  fetch(`${base_api}/api/dashboard/summary`, {
-  headers: { "ngrok-skip-browser-warning": "true" },})
-
-    .then((res) => res.json())
-    .then((data) => {
-      setSummary(data);
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-}, []);
+  useEffect(() => {
+    DashboardService
+      .getSummary()
+      .then((data) => {
+        setSummary(data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   return (
-    <div className="bg-[#0B1120] min-h-screen text-white px-7 py-5">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800/60 pb-3.5">
         <div>
-          <h1 className="text-[42px] font-bold text-cyan-400 tracking-wide leading-none">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-cyan-400 tracking-tight leading-none uppercase">
             DEFECTS DASHBOARD
           </h1>
-
-          <p className="text-gray-500 mt-2 text-sm tracking-wide">
-            Production quality overview & defect distribution
+          <p className="text-gray-400 mt-1 text-xs font-medium">
+            Production quality overview & defect distribution analytics
           </p>
         </div>
 
-        <div className="text-gray-500 text-xs mt-3 tracking-widest">
-          ● LIVE • 4/30/2026, 6:41:50 AM
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-4 gap-5 mb-6">
-        {[
-          {
-            label: "CLIENT",
-            value: "Suzuki",
-          },
-          {
-            label: "MACHINE",
-            value: "850T-1 Die Casting Machine",
-          },
-          {
-            label: "DIE",
-            value: "S-16",
-          },
-          {
-            label: "PERIOD",
-            value: "Last Month",
-          },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="bg-[#151C2C] border border-[#252D3D] rounded-xl h-[82px] px-5 flex flex-col justify-center relative"
-          >
-            <span className="text-[10px] tracking-[2px] text-gray-500 mb-2">
-              {item.label}
-            </span>
-
-            <span className="text-[18px] text-gray-100">
-              {item.value}
-            </span>
-
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">
-              ▼
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-5 mb-6">
-        {/* Card 1 */}
-        <div className="bg-[#151C2C] rounded-xl border border-[#252D3D] border-l-[3px] border-l-cyan-400 p-5 h-[118px]">
-          <p className="text-gray-500 text-[11px] tracking-[2px] uppercase">
-            Total Parts Produced
-          </p>
-
-          <h2 className="text-[54px] leading-none font-bold text-cyan-400 mt-3">
-            {summary.total_parts.toLocaleString()}
-          </h2>
-
-          <p className="text-gray-500 text-xs mt-2">
-            Last Month • 850T-1 • incl. warm-up
-          </p>
-        </div>
-
-        {/* Card 2 */}
-        <div className="bg-[#151C2C] rounded-xl border border-[#252D3D] border-l-[3px] border-l-red-500 p-5 h-[118px]">
-          <p className="text-gray-500 text-[11px] tracking-[2px] uppercase">
-            Total Defective Parts
-          </p>
-
-          <h2 className="text-[54px] leading-none font-bold text-red-400 mt-3">
-            {summary.defective_parts.toLocaleString()}
-          </h2>
-
-          <p className="text-gray-500 text-xs mt-2">
-            Incl. 3,352 warm-up defects
-          </p>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-[#151C2C] rounded-xl border border-[#252D3D] border-l-[3px] border-l-yellow-400 p-5 h-[118px]">
-          <p className="text-gray-500 text-[11px] tracking-[2px] uppercase">
-            % Defect Rate
-          </p>
-
-          <h2 className="text-[54px] leading-none font-bold text-yellow-400 mt-3">
-           {summary.defect_rate}%
-          </h2>
-
-          <p className="text-gray-500 text-xs mt-2">
-             {summary.defective_parts.toLocaleString()} of{" "}
-  {summary.total_parts.toLocaleString()}
-          </p>
+        <div className="flex items-center gap-2 text-gray-300 text-xs font-semibold tracking-wider bg-[#151C2C] px-3 py-1.5 rounded-full border border-gray-800/80 shrink-0 w-fit">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="font-mono text-[10px]">LIVE TELEMETRY</span>
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-[1.05fr_1.7fr] gap-5">
-        {/* Pie Chart */}
-        <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-5 h-[500px]">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-[15px] tracking-[2px] text-gray-400 font-semibold uppercase">
+      {/* Filters Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <CustomDropdown
+          label="CLIENT"
+          options={clients}
+          value={selectedClient}
+          onChange={setSelectedClient}
+        />
+        <CustomDropdown
+          label="MACHINE"
+          options={machines}
+          value={selectedMachine}
+          onChange={setSelectedMachine}
+        />
+        <CustomDropdown
+          label="DIE"
+          options={dies}
+          value={selectedDie}
+          onChange={setSelectedDie}
+        />
+        <CustomDropdown
+          label="PERIOD"
+          options={periods}
+          value={selectedPeriod}
+          onChange={setSelectedPeriod}
+        />
+      </div>
+
+
+      {/* Stats Summary Cards — Reusable Component with Title (Top-Left), Info (Top-Right), Centered Number */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <SummaryCard
+          title="Total Parts Produced"
+          topRightText="Live Stream"
+          value={summary.total_parts.toLocaleString()}
+          subtitle="Last Month • 850T-1 • incl. warm-up"
+          variant="cyan"
+        />
+
+        <SummaryCard
+          title="Total Defective Parts"
+          topRightText="Sync Active"
+          value={summary.defective_parts.toLocaleString()}
+          subtitle="Incl. 3,352 warm-up defects"
+          variant="red"
+        />
+
+        <SummaryCard
+          title="% Defect Rate"
+          topRightText="Target <15%"
+          value={`${summary.defect_rate}%`}
+          subtitle={`${summary.defective_parts.toLocaleString()} of ${summary.total_parts.toLocaleString()} parts`}
+          variant="yellow"
+        />
+      </div>
+
+      {/* Analytics Main Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+        {/* Pie Chart Card (Made Larger) */}
+        <div className="lg:col-span-5 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col justify-between">
+          <div className="flex justify-between items-center pb-2 border-b border-[#252D3D]/60">
+            <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase">
               Defect Distribution
             </h2>
-
-            <span className="text-gray-500 text-sm">
-             n = {summary.defective_parts.toLocaleString()}
+            <span className="text-gray-400 text-[11px] font-mono font-semibold">
+              n = {summary.defective_parts.toLocaleString()}
             </span>
           </div>
-
-          <div className="h-[420px]">
+          <div className="flex-1 w-full flex items-center justify-center my-2">
             <DefectPieChart />
           </div>
         </div>
 
-        {/* Breakdown */}
-        <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-5 h-[500px] overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[15px] tracking-[2px] text-gray-400 font-semibold uppercase">
+        {/* Breakdown Card */}
+        <div className="lg:col-span-7 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 mb-3 pb-2 border-b border-[#252D3D]">
+            <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase">
               Defect Breakdown
             </h2>
-
-            <span className="text-gray-500 text-xs">
+            <span className="text-gray-400 text-[10px] font-medium">
               % of defects • % of total parts
             </span>
           </div>
 
-          {/* Column Header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_2fr] text-[11px] text-gray-500 uppercase tracking-[1px] border-b border-[#252D3D] pb-3 mb-3">
-            <span>Defect</span>
-            <span>Count</span>
-            <span>% of Defects</span>
-            <span>% Defect Rate</span>
-            <span>Share</span>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="text-[10px] text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2">
+                  <th className="pb-2 font-extrabold">Defect Category</th>
+                  <th className="pb-2 font-extrabold">Count</th>
+                  <th className="pb-2 font-extrabold">% Defects</th>
+                  <th className="pb-2 font-extrabold">Defect Rate</th>
+                  <th className="pb-2 font-extrabold">Share</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#252D3D]/40 text-xs font-semibold">
+                {defects.map((item) => (
+                  <tr key={item.name} className="hover:bg-[#1E293B]/40 transition-colors">
+                    <td className="py-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
+                        <span className="text-gray-200">{item.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-white font-mono">{item.count}</td>
+                    <td className="py-2 text-gray-300 font-mono">{item.percent}</td>
+                    <td className="py-2 text-gray-300 font-mono">{item.rate}</td>
+                    <td className="py-2 w-28 sm:w-32">
+                      <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`${item.color} h-full rounded-full`}
+                          style={{ width: item.width }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Rows */}
-          <div className="space-y-4">
+          {/* Mobile Card List View */}
+          <div className="md:hidden space-y-2">
             {defects.map((item) => (
-              <div
-                key={item.name}
-                className="grid grid-cols-[2fr_1fr_1fr_1fr_2fr] items-center text-sm"
-              >
-                {/* Defect Name */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-3 h-3 rounded-full ${item.color}`}
-                  />
-
-                  <span className="text-gray-200">
-                    {item.name}
-                  </span>
+              <div key={item.name} className="bg-[#111827] border border-[#252D3D] rounded-lg p-2.5 space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                    <span className="text-gray-200 font-bold text-xs">{item.name}</span>
+                  </div>
+                  <span className="text-cyan-400 font-bold text-xs font-mono">{item.count}</span>
                 </div>
-
-                {/* Count */}
-                <span className="text-gray-200 font-semibold">
-                  {item.count}
-                </span>
-
-                {/* Percent */}
-                <span className="text-gray-400">
-                  {item.percent}
-                </span>
-
-                {/* Rate */}
-                <span className="text-gray-400">
-                  {item.rate}
-                </span>
-
-                {/* Progress */}
-                <div className="w-full bg-[#1E293B] rounded-full h-[7px] overflow-hidden">
-                  <div
-                    className={`${item.color} h-full rounded-full`}
-                    style={{ width: item.width }}
-                  />
+                <div className="flex justify-between text-[10px] text-gray-400 font-medium">
+                  <span>Share: <strong className="text-gray-200 font-mono">{item.percent}</strong></span>
+                  <span>Rate: <strong className="text-gray-200 font-mono">{item.rate}</strong></span>
+                </div>
+                <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
+                  <div className={`${item.color} h-full rounded-full`} style={{ width: item.width }} />
                 </div>
               </div>
             ))}

@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import GaugeCard from "@/components/GaugeCard";
 import ParameterGauge from "@/components/ParameterGauge";
+import { MonitorService } from "@/services";
+import CustomDropdown from "@/components/CustomDropdown";
+
+
+
 
 interface PredictionData {
   non_filling: number;
@@ -25,37 +30,32 @@ interface CalibrationRange {
 }
 
 type CalibrationValues = Record<string, CalibrationRange>;
-
 type MonitorData = [MonitorValues, CalibrationValues];
 
-const base_api = "https://outspoken-pandemic-surfer.ngrok-free.dev";
-
+// NOTE: Each label must be unique (used as React key) and each key should appear only once.
 const parameterMap = [
-  { label: "Curing Time", key: "CURING TIME", unit: "s" },
-  { label: "Spray Time", key: "SPRAY TIME", unit: "s" },
-  { label: "Speed 1", key: "V1", unit: "m/s" },
-  { label: "Speed 2", key: "V2", unit: "m/s" },
-  { label: "Speed 3", key: "V3", unit: "m/s" },
-  { label: "Speed 4", key: "V4", unit: "m/s" },
-  { label: "Acc Position", key: "ACCEL. POINT", unit: "mm" },
-  { label: "Deacc Position", key: "DEACEL. POINT", unit: "mm" },
-  { label: "Intensification Time", key: "INTEN. TIME", unit: "msec" },
-  { label: "Metal Pressure", key: "METAL PRESS.", unit: "MPa" },
-  { label: "Biscuit Thickness", key: "BISCUIT THICKNESS", unit: "mm" },
-  { label: "Clamp Force PCT", key: "CLAMP FORCE", unit: "%" },
-  { label: "Clamp Tonnage", key: "CLAMP TONNAGE", unit: "T" },
-  { label: "Metal Temperature", key: "FURNACE METAL TEMP.", unit: "°C" },
-  { label: "Metal Preassure", key: "METAL PRESS.", unit: "MPa" },
-  { label: "Pouring Time", key: "POURING TIME", unit: "s" },
-  { label: "Die Core Open Time", key: "DIE OPEN CORE OUT TIME", unit: "s" },
-  { label: "Die Core Close Time", key: "DIE-CLOSE CORE IN TIME", unit: "s" },
-  { label: "Ejector Time", key: "EJECTOR TIME", unit: "s" },
-  { label: "Extract Time", key: "EXTRACT TIME", unit: "s" },
-  { label: "Intensification Time", key: "INTEN. TIME", unit: "ms" },
-  { label: "Intensification Acc. Pressure", key: "INTENSIFICATION ACC. PRESSURE", unit: "MPa" },
-  { label: "Shot Acc. Pressure", key: "SHOT ACC. PRESSURE", unit: "MPa" },
-  { label: "Shot Fwd Time", key: "SHOT FWD TIME", unit: "s" },
-
+  { label: "Curing Time",                   key: "CURING TIME",                   unit: "s"    },
+  { label: "Spray Time",                    key: "SPRAY TIME",                    unit: "s"    },
+  { label: "Speed 1",                       key: "V1",                             unit: "m/s"  },
+  { label: "Speed 2",                       key: "V2",                             unit: "m/s"  },
+  { label: "Speed 3",                       key: "V3",                             unit: "m/s"  },
+  { label: "Speed 4",                       key: "V4",                             unit: "m/s"  },
+  { label: "Acc Position",                  key: "ACCEL. POINT",                  unit: "mm"   },
+  { label: "Deacc Position",                key: "DEACEL. POINT",                 unit: "mm"   },
+  { label: "Intensification Time",          key: "INTEN. TIME",                   unit: "msec" },
+  { label: "Metal Pressure",                key: "METAL PRESS.",                  unit: "MPa"  },
+  { label: "Biscuit Thickness",             key: "BISCUIT THICKNESS",             unit: "mm"   },
+  { label: "Clamp Force PCT",               key: "CLAMP FORCE",                   unit: "%"    },
+  { label: "Clamp Tonnage",                 key: "CLAMP TONNAGE",                 unit: "T"    },
+  { label: "Metal Temperature",             key: "FURNACE METAL TEMP.",           unit: "°C"   },
+  { label: "Pouring Time",                  key: "POURING TIME",                  unit: "s"    },
+  { label: "Die Core Open Time",            key: "DIE OPEN CORE OUT TIME",        unit: "s"    },
+  { label: "Die Core Close Time",           key: "DIE-CLOSE CORE IN TIME",        unit: "s"    },
+  { label: "Ejector Time",                  key: "EJECTOR TIME",                  unit: "s"    },
+  { label: "Extract Time",                  key: "EXTRACT TIME",                  unit: "s"    },
+  { label: "Intensification Acc. Pressure", key: "INTENSIFICATION ACC. PRESSURE", unit: "MPa"  },
+  { label: "Shot Acc. Pressure",            key: "SHOT ACC. PRESSURE",            unit: "MPa"  },
+  { label: "Shot Fwd Time",                 key: "SHOT FWD TIME",                 unit: "s"    },
 ];
 
 export default function MonitorPage() {
@@ -73,25 +73,58 @@ export default function MonitorPage() {
 
   const [monitorData, setMonitorData] = useState<MonitorData | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsUpdating(true);
+      setApiError(null);
       try {
-        const headers = {
-          "ngrok-skip-browser-warning": "true",
-          "Content-Type": "application/json",
-        };
-
         const [predictRes, monitorRes] = await Promise.all([
-          fetch(`${base_api}/api/predictor/predict?die=${selectedDie}`, { headers }).then((res) => res.json()),
-          fetch(`${base_api}/api/predictor/monitor?die=${selectedDie}`, { headers }).then((res) => res.json()),
+          MonitorService.predict(selectedDie),
+          MonitorService.monitor(selectedDie),
         ]);
 
         setPredictionData(predictRes);
-        setMonitorData(monitorRes);
-      } catch (err) {
+        setMonitorData(monitorRes as unknown as MonitorData);
+      } catch (err: unknown) {
         console.error("Error fetching dashboard data:", err);
+
+        // Build a human-readable message from Axios or generic errors
+        let message = "Unable to load monitor data. Please try again.";
+        if (err && typeof err === "object") {
+          const axiosErr = err as {
+            response?: { status?: number; data?: { detail?: string } };
+            code?: string;
+            message?: string;
+          };
+          if (axiosErr.response?.status) {
+            const status = axiosErr.response.status;
+            const detail = axiosErr.response.data?.detail;
+            if (status === 401) {
+              message = "Session expired. Please log in again.";
+            } else if (status === 403) {
+              message = "Access denied. You do not have permission to view this data.";
+            } else if (status === 404) {
+              message = `No data found for die ${selectedDie}. Check that the die ID is correct.`;
+            } else if (status >= 500) {
+              message = detail
+                ? `Server error: ${detail}`
+                : "The server encountered an error. Please try again in a moment.";
+            } else {
+              message = detail ?? `Unexpected error (HTTP ${status}).`;
+            }
+          } else if (
+            axiosErr.code === "ERR_NETWORK" ||
+            axiosErr.message?.toLowerCase().includes("network")
+          ) {
+            message =
+              "Cannot reach the backend server. Make sure the API is running and reachable.";
+          } else if (axiosErr.code === "ECONNABORTED") {
+            message = "Request timed out. The server took too long to respond.";
+          }
+        }
+        setApiError(message);
       } finally {
         setIsUpdating(false);
       }
@@ -140,67 +173,82 @@ export default function MonitorPage() {
   const okCount = parameters.filter((p) => p.status === "OK").length;
 
   return (
-    <div className="bg-[#0B1120] min-h-screen text-white px-4 md:px-8 py-6">
-      <div className="flex flex-col lg:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b border-gray-800/60">
+    <div className="space-y-6">
+      {/* ── API Error Banner ──────────────────────────────────────── */}
+      {apiError && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-xl border border-red-800/60 bg-red-950/40 px-4 py-3 text-sm text-red-300"
+        >
+          <span className="mt-0.5 text-red-400 text-base leading-none">⚠</span>
+          <div>
+            <p className="font-semibold text-red-200 mb-0.5">Data fetch failed</p>
+            <p>{apiError}</p>
+          </div>
+          <button
+            onClick={() => setApiError(null)}
+            className="ml-auto text-red-500 hover:text-red-300 transition-colors text-lg leading-none"
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      <div className="flex flex-col lg:flex-row justify-between items-start gap-4 pb-4 border-b border-gray-800/60">
         <div>
-          <div className="flex flex-wrap items-center gap-3 mb-3">
-            <h1 className="text-2xl md:text-[34px] font-bold tracking-tight leading-none">
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-none text-white">
               Die Casting Process Monitor
             </h1>
             {isUpdating && (
-              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/50 px-2 py-0.5 rounded animate-pulse">
+              <span className="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800/50 px-2 py-0.5 rounded animate-pulse font-mono">
                 Updating...
               </span>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <select
+            <CustomDropdown
+              options={dies}
               value={selectedDie}
-              onChange={(e) => setSelectedDie(e.target.value)}
-              className="bg-[#121B2B] border border-[#1F2937] rounded-lg px-3 py-1.5 text-sm text-white outline-none cursor-pointer"
-            >
-              {dies.map((die) => (
-                <option key={die} value={die}>
-                  {die}
-                </option>
-              ))}
-            </select>
-            <p className="text-gray-500 text-xs md:text-sm">
+              onChange={setSelectedDie}
+              className="w-32"
+            />
+
+            <p className="text-gray-400 text-xs sm:text-sm">
               Live IoT parameters • Post-cast defect prediction
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 md:gap-6 text-left lg:text-right w-full lg:w-auto justify-start lg:justify-end">
+        <div className="flex flex-wrap gap-4 sm:gap-6 text-left lg:text-right w-full lg:w-auto justify-start lg:justify-end bg-[#121B2B] border border-[#1F2937] p-3 rounded-xl">
           <div>
-            <div className="text-gray-500 text-[10px] uppercase tracking-wider">Part ID</div>
-            <div className="text-cyan-400 font-semibold text-xs md:text-sm mt-0.5">
+            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Part ID</div>
+            <div className="text-cyan-400 font-semibold text-xs sm:text-sm mt-0.5 font-mono">
               {raw?.part_id ?? "Loading..."}
             </div>
           </div>
           <div>
-            <div className="text-gray-500 text-[10px] uppercase tracking-wider">Timestamp</div>
-            <div className="text-gray-300 text-xs md:text-sm mt-0.5">
-              {raw?.timestamp ? new Date(raw.timestamp).toLocaleString() : "Loading..."}
+            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Timestamp</div>
+            <div className="text-gray-300 text-xs sm:text-sm mt-0.5 font-mono">
+              {raw?.timestamp ? new Date(raw.timestamp).toLocaleTimeString() : "Loading..."}
             </div>
           </div>
           <div>
-            <div className="text-gray-500 text-[10px] uppercase tracking-wider">Verdict</div>
-            <div className={`font-bold text-xs md:text-sm mt-0.5 ${!isDataLoaded? "text-gray-400": 
-              (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
+            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Verdict</div>
+            <div className={`font-bold text-xs sm:text-sm mt-0.5 ${!isDataLoaded ? "text-gray-400" : (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
               {isDataLoaded ? (totalParamsCount - okCount > 3) ? "REJECT" : "PASS" : "..."} 
             </div>
           </div>
           <div>
-            <div className="text-gray-500 text-[10px] uppercase tracking-wider">Params</div>
-            <div className="text-yellow-400 font-semibold text-xs md:text-sm mt-0.5">
+            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Params</div>
+            <div className="text-yellow-400 font-semibold text-xs sm:text-sm mt-0.5 font-mono">
               {isDataLoaded ? `${okCount}/${totalParamsCount} OK` : "0/0 OK"}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mb-6">
+      <div>
         <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
           POST-CAST DEFECT PREDICTION
         </h2>
@@ -218,7 +266,7 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      <div className="mb-6">
+      <div>
         <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
           LIVE PROCESS PARAMETERS
         </h2>
@@ -239,10 +287,6 @@ export default function MonitorPage() {
             </div>
           )}
         </div>
-      </div>
-
-      <div className="text-center text-gray-600 text-[11px] mt-8 border-t border-gray-900 pt-4">
-        Data refreshes every 1 minute • Simulated IoT feed
       </div>
     </div>
   );

@@ -19,25 +19,24 @@ export default function GaugeCard({
 
   return (
     <div
-      className="bg-[#151C2C] border rounded-xl h-[210px] p-4 relative overflow-hidden"
+      className="bg-[#151C2C] border rounded-xl p-4 flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
       style={{
-        borderColor: color,
+        borderColor: `${color}40`,
       }}
     >
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start gap-1">
         <div>
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
             {label}
           </h3>
-
-          <p className="text-gray-500 text-[11px] mt-1">
+          <p className="text-gray-400 text-[10px] sm:text-xs mt-0.5 leading-tight">
             {subtitle}
           </p>
         </div>
 
         <div
-          className="text-[10px] px-2 py-[2px] rounded font-bold"
+          className="text-[10px] px-2 py-0.5 rounded font-bold shrink-0"
           style={{
             color,
             backgroundColor: `${color}20`,
@@ -47,15 +46,11 @@ export default function GaugeCard({
         </div>
       </div>
 
-      {/* Gauge */}
-      <div className="flex items-center justify-center mt-5">
-        <div className="relative w-32 h-32">
+      {/* Gauge Visual */}
+      <div className="flex items-center justify-center my-3">
+        <div className="relative w-24 h-24 sm:w-28 sm:h-28">
           {/* Background Ring */}
-          <svg
-            className="absolute inset-0"
-            width="128"
-            height="128"
-          >
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128">
             <circle
               cx="64"
               cy="64"
@@ -64,7 +59,6 @@ export default function GaugeCard({
               strokeWidth="10"
               fill="none"
             />
-
             {/* Progress Arc */}
             <circle
               cx="64"
@@ -74,9 +68,7 @@ export default function GaugeCard({
               strokeWidth="10"
               fill="none"
               strokeDasharray={302}
-              strokeDashoffset={
-                302 - (302 * value) / 100
-              }
+              strokeDashoffset={302 - (302 * value) / 100}
               strokeLinecap="round"
               transform="rotate(-90 64 64)"
             />
@@ -84,40 +76,37 @@ export default function GaugeCard({
 
           {/* Needle */}
           <div
-            className="absolute left-1/2 top-1/2 origin-bottom"
+            className="absolute left-1/2 top-1/2 origin-bottom transition-transform duration-500"
             style={{
               transform: `translate(-50%, -100%) rotate(${angle}deg)`,
             }}
           >
             <div
-              className="w-[3px] h-10 rounded-full"
+              className="w-[2.5px] h-8 sm:h-10 rounded-full"
               style={{
                 backgroundColor: color,
               }}
             />
           </div>
 
-          {/* Center Text */}
+          {/* Center Value Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div
-              className="text-[38px] font-bold leading-none"
-              style={{
-                color,
-              }}
+              className="text-2xl sm:text-3xl font-extrabold leading-none"
+              style={{ color }}
             >
               {value}
             </div>
-
-            <div className="text-gray-500 text-[11px] mt-1">
-              % Probability
+            <div className="text-gray-400 text-[9px] sm:text-[10px] mt-0.5">
+              % Prob.
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Progress */}
+      {/* Bottom Progress Bar */}
       <div
-        className="absolute bottom-0 left-0 h-[3px]"
+        className="absolute bottom-0 left-0 h-1 transition-all"
         style={{
           backgroundColor: color,
           width: `${value}%`,

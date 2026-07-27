@@ -1,68 +1,25 @@
-// import "./globals.css";
-// import Sidebar from "@/components/Sidebar";
-// import Topbar from "@/components/Topbar";
+import type { Metadata } from 'next';
+import './globals.css';
+import QueryProvider from '@/providers/QueryProvider';
+import AppShell from '@/components/AppShell';
 
-
-// export const metadata = {
-//   title: "Machine AI",
-//   description: "Industrial AI Dashboard",
-// };
-
-// export default function RootLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return (
-//     <html lang="en">
-//       <body>
-//   <div className="flex bg-[#0B1120] text-white">
-//     <Sidebar />
-
-//     <div className="flex-1 flex flex-col">
-//       <Topbar />
-
-//       <main className="flex-1">
-//         {children}
-//       </main>
-//     </div>
-//   </div>
-//      </body>
-//     </html>
-//   );
-// }
-import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Topbar from "@/components/Topbar";
-import BackgroundUpdater from "@/components/BackgroundUpdater";
-
-export const metadata = {
-  title: "Machine AI",
-  description: "Industrial AI Dashboard",
+export const metadata: Metadata = {
+  title: {
+    default: 'Machine AI',
+    template: '%s | Machine AI',
+  },
+  description:
+    'Real-time industrial die casting quality control — defect prediction, process monitoring, and machine calibration powered by AI.',
+  keywords: ['die casting', 'quality control', 'AI', 'defect prediction', 'RICO'],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        {/* Runs IoT update globally every minute */}
-        <BackgroundUpdater />
-
-        <div className="flex bg-[#0B1120] text-white min-h-screen">
-          <Sidebar />
-
-          <div className="flex-1 flex flex-col">
-            <Topbar />
-
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-        </div>
+        <QueryProvider>
+          <AppShell>{children}</AppShell>
+        </QueryProvider>
       </body>
     </html>
   );

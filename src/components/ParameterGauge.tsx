@@ -13,71 +13,52 @@ export default function ParameterGauge({
   tolerance,
   status,
 }: ParameterGaugeProps) {
+  const isOk = status === "OK";
+
   return (
-    <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 h-[105px]">
-      <div className="flex justify-between items-start">
-        {/* Left */}
-        <div className="flex gap-3">
-          {/* Gauge Meter */}
-          <div className="relative w-10 h-10 mt-1">
-            {/* Arc */}
-            <div
-              className={`absolute inset-0 rounded-full border-[3px] ${
-                status === "FAIL"
-                  ? "border-red-500"
-                  : "border-green-500"
-              }`}
-            />
-
-            {/* Needle */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full rotate-45 origin-bottom">
-              <div
-                className={`w-[2px] h-4 ${
-                  status === "FAIL"
-                    ? "bg-red-500"
-                    : "bg-yellow-400"
-                }`}
-              />
-            </div>
-          </div>
-
-          {/* Text */}
-          <div>
-            <p className="text-gray-400 text-sm">
-              {name}
-            </p>
-
-            <div
-              className={`text-[30px] font-bold leading-none mt-1 ${
-                status === "FAIL"
-                  ? "text-red-400"
-                  : "text-green-400"
-              }`}
-            >
-              {value}
-            </div>
-          </div>
+    <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-3.5 sm:p-4 flex flex-col justify-between hover:border-cyan-500/30 transition-colors">
+      <div className="flex justify-between items-start gap-2">
+        {/* Name and Status Icon */}
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+              isOk ? "bg-green-400 animate-pulse" : "bg-red-500 animate-bounce"
+            }`}
+          />
+          <p className="text-gray-300 text-xs sm:text-sm font-medium truncate">
+            {name}
+          </p>
         </div>
 
-        {/* Right */}
-        <div className="text-right">
-          <div className="text-gray-500 text-[10px] uppercase tracking-[2px]">
-            Tolerance
-          </div>
+        {/* Status Badge */}
+        <span
+          className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 ${
+            isOk
+              ? "bg-green-500/20 text-green-400 border border-green-500/30"
+              : "bg-red-500/20 text-red-400 border border-red-500/30"
+          }`}
+        >
+          {status}
+        </span>
+      </div>
 
-          <div className="text-gray-300 text-xs mt-1">
+      {/* Main Metric Value & Tolerance */}
+      <div className="mt-3 flex items-baseline justify-between gap-2">
+        <div
+          className={`text-xl sm:text-2xl font-bold tracking-tight ${
+            isOk ? "text-green-400" : "text-red-400"
+          }`}
+        >
+          {value}
+        </div>
+
+        <div className="text-right shrink-0">
+          <span className="block text-[9px] text-gray-500 uppercase tracking-widest font-semibold">
+            Tol.
+          </span>
+          <span className="text-[11px] text-gray-400 font-mono">
             {tolerance}
-          </div>
-
-          <div
-            className={`mt-2 text-[10px] px-2 py-1 rounded font-bold inline-block ${
-              status === "OK"
-                ? "bg-green-500/20 text-green-400"
-                : "bg-red-500/20 text-red-400"
-            }`}
-          >
-            {status}
-          </div>
+          </span>
         </div>
       </div>
     </div>

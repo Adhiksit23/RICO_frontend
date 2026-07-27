@@ -31,15 +31,15 @@ const COLORS = [
 
 export default function DefectPieChart() {
   return (
-    <div className="w-full h-[380px] relative">
+    <div className="w-full h-[280px] sm:h-[320px] relative flex items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={90}
-            outerRadius={140}
+            innerRadius={75}
+            outerRadius={115}
             dataKey="value"
             stroke="none"
           >
@@ -54,12 +54,11 @@ export default function DefectPieChart() {
       </ResponsiveContainer>
 
       {/* Center Text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <h2 className="text-5xl font-bold text-white">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <h2 className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight leading-none">
           22.59%
         </h2>
-
-        <p className="text-gray-400 mt-2 tracking-wide">
+        <p className="text-xs text-gray-400 font-extrabold uppercase tracking-widest mt-1.5">
           DEFECT RATE
         </p>
       </div>
