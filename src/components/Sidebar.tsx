@@ -7,7 +7,6 @@ import {
   DashboardIcon,
   MonitorIcon,
   CalibrateIcon,
-  SettingsIcon,
   UsersIcon,
   CloseIcon,
 } from "@/components/icons";
@@ -26,7 +25,6 @@ export default function Sidebar({ onNavClick, isMobile = false }: SidebarProps) 
     { name: "Defects Dashboard", path: "/dashboard", icon: DashboardIcon },
     { name: "Monitor & Predict", path: "/monitor", icon: MonitorIcon },
     { name: "Calibrate", path: "/calibration", icon: CalibrateIcon },
-    { name: "Settings", path: "/settings", icon: SettingsIcon },
   ];
 
   if (isAdmin) {
