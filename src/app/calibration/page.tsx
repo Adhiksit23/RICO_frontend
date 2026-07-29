@@ -51,6 +51,7 @@ const safeParseNumber = (val: number | string | null | undefined): string => {
 
 export default function CalibrationPage() {
   const [ranges, setRanges] = useState<Record<string, RangeData>>({});
+  const [ranges_stored, setRanges_stored] = useState<Record<string, RangeData>>({});
   const [latestParams, setLatestParams] = useState<Record<string, string>>({});
   const [latestRanges, setLatestRanges] = useState<Record<string, { min_range?: string; max_range?: string }>>({});
   const [isCalculated, setIsCalculated] = useState(false);
@@ -111,6 +112,7 @@ export default function CalibrationPage() {
       }
 
       setRanges(initialRanges);
+      setRanges_stored(initialRanges)
       setBaselineSnapshot(formattedSnapshot);
       setBaselineRanges(toleranceRanges);
       setKeyMap(mapping);
@@ -169,6 +171,7 @@ export default function CalibrationPage() {
   const machines = ["UBE 850T-1", "UBE 850T-2", "UBE 850T-3"];
   const dies = ["S14", "S16", "S17"];
   const calculatedRows = useMemo(() => Object.entries(ranges), [ranges]);
+  const LatestRows = useMemo(() => Object.entries(ranges_stored), [ranges_stored]);
 
   const handleChange = (key: string, value: string) => {
     setLatestParams((prev) => ({ ...prev, [key]: value }));
@@ -297,11 +300,11 @@ export default function CalibrationPage() {
             Recipe Window Optimization
           </h2>
           <span className="text-xs text-gray-400">
-            {calculatedRows.length} Parameters
+            {LatestRows.length} Parameters
           </span>
         </div>
 
-        {calculatedRows.length === 0 ? (
+        {LatestRows.length === 0 ? (
           <div className="text-center py-12 text-gray-500 border border-dashed border-gray-800 rounded-xl text-sm">
             No configuration data available for selected machine & die.
           </div>
@@ -317,7 +320,7 @@ export default function CalibrationPage() {
                 </div>
 
                 <div className="divide-y divide-[#182232]">
-                  {calculatedRows.map(([key, value], index) => {
+                  {LatestRows.map(([key, value], index) => {
                     const norm = normalizeKey(key);
                     const unit = value?.unit || getUnit(key);
                     return (
@@ -371,7 +374,7 @@ export default function CalibrationPage() {
 
             {/* Mobile Card List View */}
             <div className="md:hidden space-y-4">
-              {calculatedRows.map(([key, value], index) => {
+              {LatestRows.map(([key, value], index) => {
                 const norm = normalizeKey(key);
                 const unit = value?.unit || getUnit(key);
                 return (
