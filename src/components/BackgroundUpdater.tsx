@@ -29,10 +29,13 @@ export default function BackgroundUpdater() {
     // Then every minute
     const interval = setInterval(update_IOT, 60000);
     
-    // // Then every 1 minute
-    // const interval_1 = setInterval(update, 60000);
+    // Then every 1 minute
+    const interval_1 = setInterval(update, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearInterval(interval_1);
+    };
   }, []);
 
   return null;
