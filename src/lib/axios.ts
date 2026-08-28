@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   withCredentials: true, // sends HTTP-only cookies automatically
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
   timeout: 30000,
 });

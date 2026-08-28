@@ -216,7 +216,7 @@ export default function CalibrationPage() {
   const applyCalibration = async () => {
     setIsApplying(true);
     try {
-      const data = await CalibrationService.apply(selectedMachine, selectedDie, buildPayload());
+      const data = await CalibrationService.apply(selectedMachine, selectedDie, buildPayload(), summary.samples_analyzed);
       setStatusMessage(data.message || "Calibration Applied Successfully");
       setStatusType("success");
       await fetchDatabaseLatest();

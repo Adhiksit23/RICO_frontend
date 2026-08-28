@@ -50,7 +50,7 @@ const parameterMap = [
   { label: "Metal Temperature",             key: "FURNACE METAL TEMP.",           unit: "°C"   },
   { label: "Pouring Time",                  key: "POURING TIME",                  unit: "s"    },
   { label: "Die Core Open Time",            key: "DIE OPEN CORE OUT TIME",        unit: "s"    },
-  { label: "Die Core Close Time",           key: "DIE-CLOSE CORE IN TIME",        unit: "s"    },
+  // { label: "Die Core Close Time",           key: "DIE-CLOSE CORE IN TIME",        unit: "s"    },
   { label: "Ejector Time",                  key: "EJECTOR TIME",                  unit: "s"    },
   { label: "Extract Time",                  key: "EXTRACT TIME",                  unit: "s"    },
   { label: "Intensification Acc. Pressure", key: "INTENSIFICATION ACC. PRESSURE", unit: "MPa"  },

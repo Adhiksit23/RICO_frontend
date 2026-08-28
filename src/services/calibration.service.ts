@@ -17,9 +17,16 @@ export const CalibrationService = {
       .get<CalibrationRangesResponse>('/api/calibration/ranges', { params: { machine, die } })
       .then((r) => r.data),
 
-  apply: (machine: string, die: string, payload: CalibrationPayload): Promise<CalibrationApplyResponse> =>
+  apply: (
+    machine: string,
+    die: string,
+    payload: CalibrationPayload,
+    samplesAnalyzed: number,
+  ): Promise<CalibrationApplyResponse> =>
     axiosInstance
-      .post<CalibrationApplyResponse>('/api/calibration/apply', payload, { params: { machine, die } })
+      .post<CalibrationApplyResponse>('/api/calibration/apply', payload, {
+        params: { machine, die, samples_analyzed: samplesAnalyzed },
+      })
       .then((r) => r.data),
 
   runWorkflow: (): Promise<{ message?: string; status?: string }> =>
