@@ -61,7 +61,7 @@ const parameterMap = [
 
 export default function MonitorPage() {
   const [selectedDie, setSelectedDie] = useState("S14");
-  const dies = ["S14", "S16", "S17"];
+  const dies = ["S14", "S16", "S17", "S18"];
 
   const [predictionData, setPredictionData] = useState<PredictionData>({
     non_filling: 0,
