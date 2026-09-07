@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
-import BackgroundUpdater from '@/components/BackgroundUpdater';
 import AuthGuard from '@/components/AuthGuard';
 
 const AUTH_PATHS = ['/login', '/signup', '/invite'];
@@ -31,7 +30,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard>
-      <BackgroundUpdater />
+      {/* IoT sync runs on the backend scheduler (IOT_SYNC_ENABLED) — not in the browser */}
       <div className="flex min-h-screen bg-[#0B1120] text-white overflow-x-hidden">
         {/* Desktop Fixed Sidebar */}
         <aside className="hidden lg:block w-64 shrink-0">

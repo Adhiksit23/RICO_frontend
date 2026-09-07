@@ -5,6 +5,7 @@ import GaugeCard from "@/components/GaugeCard";
 import ParameterGauge from "@/components/ParameterGauge";
 import { MonitorService } from "@/services";
 import CustomDropdown from "@/components/CustomDropdown";
+import IotSyncPanel from "@/components/IotSyncPanel";
 
 
 
@@ -174,6 +175,8 @@ export default function MonitorPage() {
 
   return (
     <div className="space-y-6">
+      <IotSyncPanel />
+
       {/* ── API Error Banner ──────────────────────────────────────── */}
       {apiError && (
         <div
