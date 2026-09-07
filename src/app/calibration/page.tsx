@@ -169,7 +169,7 @@ export default function CalibrationPage() {
   };
 
   const machines = ["UBE 850T-1", "UBE 850T-2", "UBE 850T-3"];
-  const dies = ["S14", "S16", "S17"];
+  const dies = ["S14", "S16", "S17", "S18"];
   const calculatedRows = useMemo(() => Object.entries(ranges), [ranges]);
   const LatestRows = useMemo(() => Object.entries(ranges_stored), [ranges_stored]);
 

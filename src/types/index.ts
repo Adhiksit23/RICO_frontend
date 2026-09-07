@@ -110,7 +110,7 @@ export type RiskLevel = 'LOW' | 'MED' | 'HIGH';
 export type StatusType = 'OK' | 'FAIL';
 export type UserRole = 'plant_admin' | 'user';
 
-export const DIE_OPTIONS = ['S14', 'S16', 'S17'] as const;
+export const DIE_OPTIONS = ['S14', 'S16', 'S17', "S18"] as const;
 export const MACHINE_OPTIONS = ['UBE 850T-1', 'UBE 850T-2', 'UBE 850T-3'] as const;
 export type Die = typeof DIE_OPTIONS[number];
 export type Machine = typeof MACHINE_OPTIONS[number];
