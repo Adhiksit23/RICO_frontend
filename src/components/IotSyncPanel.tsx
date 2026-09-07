@@ -3,21 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { IotService, type IotSyncStatus } from '@/services/iot.service';
 import { useAuthStore } from '@/store/authStore';
-
-function formatTs(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
-}
+import { formatIstDateTime } from '@/lib/datetime';
 
 export default function IotSyncPanel() {
   const { user } = useAuthStore();
@@ -154,13 +140,13 @@ export default function IotSyncPanel() {
           <div className="rounded-xl bg-black/30 border border-gray-800 px-3 py-2.5">
             <dt className="text-gray-500 font-medium">Last run</dt>
             <dd className="text-gray-200 mt-0.5 font-semibold">
-              {formatTs(status.last_run_at)}
+              {formatIstDateTime(status.last_run_at)}
             </dd>
           </div>
           <div className="rounded-xl bg-black/30 border border-gray-800 px-3 py-2.5">
             <dt className="text-gray-500 font-medium">Next run</dt>
             <dd className="text-gray-200 mt-0.5 font-semibold">
-              {running ? formatTs(status.next_run_at) : '—'}
+              {running ? formatIstDateTime(status.next_run_at) : '—'}
             </dd>
           </div>
           <div className="rounded-xl bg-black/30 border border-gray-800 px-3 py-2.5">

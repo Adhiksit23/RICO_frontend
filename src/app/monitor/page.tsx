@@ -6,6 +6,7 @@ import ParameterGauge from "@/components/ParameterGauge";
 import { MonitorService } from "@/services";
 import CustomDropdown from "@/components/CustomDropdown";
 import IotSyncPanel from "@/components/IotSyncPanel";
+import { formatIstDateTime } from "@/lib/datetime";
 
 
 
@@ -231,9 +232,9 @@ export default function MonitorPage() {
             </div>
           </div>
           <div>
-            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Timestamp</div>
+            <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Timestamp (IST)</div>
             <div className="text-gray-300 text-xs sm:text-sm mt-0.5 font-mono">
-              {raw?.timestamp ? new Date(raw.timestamp).toLocaleTimeString() : "Loading..."}
+              {raw?.timestamp ? formatIstDateTime(raw.timestamp) : "Loading..."}
             </div>
           </div>
           <div>
