@@ -165,7 +165,7 @@ export default function MonitorPage() {
         return {
           name: item.label,
           value: `${value} ${item.unit}`,
-          tolerance: `${range.lower_tolerance.toFixed(1)} - ${range.upper_tolerance.toFixed(1)} ${item.unit}`,
+          tolerance: `${range.lower_tolerance.toFixed(2)} - ${range.upper_tolerance.toFixed(2)} ${item.unit}`,
           status: isOk ? "OK" : "FAIL",
         };
       })
