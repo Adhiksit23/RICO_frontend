@@ -52,7 +52,7 @@ const parameterMap = [
   { label: "Metal Temperature",             key: "FURNACE METAL TEMP.",           unit: "°C"   },
   { label: "Pouring Time",                  key: "POURING TIME",                  unit: "s"    },
   { label: "Die Core Open Time",            key: "DIE OPEN CORE OUT TIME",        unit: "s"    },
-  // { label: "Die Core Close Time",           key: "DIE-CLOSE CORE IN TIME",        unit: "s"    },
+  { label: "Die Core Close Time",           key: "DIE-CLOSE CORE IN TIME",        unit: "s"    },
   { label: "Ejector Time",                  key: "EJECTOR TIME",                  unit: "s"    },
   { label: "Extract Time",                  key: "EXTRACT TIME",                  unit: "s"    },
   { label: "Intensification Acc. Pressure", key: "INTENSIFICATION ACC. PRESSURE", unit: "MPa"  },
@@ -138,8 +138,8 @@ export default function MonitorPage() {
   }, [selectedDie]);
 
   const getPredictionStatus = (value: number) => {
-    if (value < 10) return { status: "LOW", color: "#22C55E" };
-    if (value <= 50) return { status: "MED", color: "#F59E0B" };
+    if (value < 40) return { status: "LOW", color: "#22C55E" };
+    if (value <= 60) return { status: "MED", color: "#F59E0B" };
     return { status: "HIGH", color: "#EF4444" };
   };
 
@@ -237,12 +237,12 @@ export default function MonitorPage() {
               {raw?.timestamp ? formatIstDateTime(raw.timestamp) : "Loading..."}
             </div>
           </div>
-          <div>
+          {/* <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Verdict</div>
             <div className={`font-bold text-xs sm:text-sm mt-0.5 ${!isDataLoaded ? "text-gray-400" : (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
               {isDataLoaded ? (totalParamsCount - okCount > 3) ? "REJECT" : "PASS" : "..."} 
             </div>
-          </div>
+          </div> */}
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Params</div>
             <div className="text-yellow-400 font-semibold text-xs sm:text-sm mt-0.5 font-mono">
