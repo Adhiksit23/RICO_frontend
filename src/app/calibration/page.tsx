@@ -78,7 +78,9 @@ export default function CalibrationPage() {
       .toLowerCase()
       .replaceAll("/", "_")
       .replaceAll("-", "_")
-      .replaceAll(" ", "_");
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
   }, []);
 
   const fetchDatabaseLatest = useCallback(async () => {
@@ -202,7 +204,7 @@ export default function CalibrationPage() {
         latestRanges[normalizedKey]?.max_range !== undefined
           ? Number(latestRanges[normalizedKey].max_range)
           : (value?.max_range ?? 0);
-      
+      console.log(backendKey)
       payload[backendKey] = {
         ...value, 
         baseline: finalValue, 
@@ -322,11 +324,12 @@ export default function CalibrationPage() {
                 <div className="divide-y divide-[#182232]">
                   {LatestRows.map(([key, value], index) => {
                     const norm = normalizeKey(key);
+                    // console.log(norm)
                     const unit = value?.unit || getUnit(key);
                     return (
                       <div key={index} className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-[#182335]/30 transition-colors">
                         <div className="col-span-5">
-                          <div className="text-sm font-bold text-white">{key}</div>
+                          <div className="text-sm font-bold text-white">{norm}</div>
                           {unit && <span className="text-xs text-gray-500">Unit: {unit}</span>}
                         </div>
 
