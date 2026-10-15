@@ -3,105 +3,53 @@
 import DefectPieChart from "@/components/DefectPieChart";
 import SummaryCard from "@/components/SummaryCard";
 import CustomDropdown from "@/components/CustomDropdown";
-
-import { useEffect, useState } from "react";
-import { DashboardService } from "@/services";
-
+import { useDashboard } from "@/hooks/useDashboard";
 
 export default function DashboardPage() {
-  const [selectedClient, setSelectedClient] = useState("Suzuki");
-  const [selectedMachine, setSelectedMachine] = useState("UBE 850T-1");
-  const [selectedDie, setSelectedDie] = useState("S-16");
-  const [selectedPeriod, setSelectedPeriod] = useState("Last Month");
+  const {
+    selectedClient,
+    selectedMachine,
+    selectedDie,
+    selectedPeriod,
+    setSelectedClient,
+    setSelectedMachine,
+    setSelectedDie,
+    setSelectedPeriod,
+    filtersMetadata,
+    stats,
+    isLoading,
+    isFetching,
+    isPlaceholderData,
+    error,
+    refetch,
+  } = useDashboard();
 
-  const clients = ["Suzuki", "Hero", "Bajaj", "TVS"];
-  const machines = ["UBE 850T-1", "UBE 850T-2", "UBE 850T-3"];
-  const dies = ["S-14", "S-16", "S-17", "S-18"];
-  const periods = ["Today", "Last 7 Days", "Last Month", "Year to Date"];
+  // If we are waiting for a NEW filter combination that has never been cached before
+  const isFetchingNewFilter = isPlaceholderData || (isLoading && !stats);
 
-  const defects = [
-    {
-      name: "Non-filling",
-      count: "2,031",
-      percent: "31.36%",
-      rate: "7.09%",
-      color: "bg-cyan-400",
-      width: "31%",
-    },
-    {
-      name: "Warm-up Defects",
-      count: "3,352",
-      percent: "51.76%",
-      rate: "11.69%",
-      color: "bg-purple-500",
-      width: "52%",
-    },
-    {
-      name: "Blowhole",
-      count: "275",
-      percent: "4.25%",
-      rate: "0.96%",
-      color: "bg-blue-400",
-      width: "4%",
-    },
-    {
-      name: "Porosity",
-      count: "245",
-      percent: "3.78%",
-      rate: "0.85%",
-      color: "bg-yellow-400",
-      width: "3.7%",
-    },
-    {
-      name: "Shrinkage",
-      count: "215",
-      percent: "3.32%",
-      rate: "0.75%",
-      color: "bg-pink-500",
-      width: "3.3%",
-    },
-    {
-      name: "Chip-off",
-      count: "155",
-      percent: "2.39%",
-      rate: "0.54%",
-      color: "bg-green-400",
-      width: "2.4%",
-    },
-    {
-      name: "Crack",
-      count: "120",
-      percent: "1.85%",
-      rate: "0.42%",
-      color: "bg-red-500",
-      width: "1.8%",
-    },
-    {
-      name: "Others",
-      count: "83",
-      percent: "1.28%",
-      rate: "0.29%",
-      color: "bg-gray-400",
-      width: "1.2%",
-    },
+  // Dynamic filter dropdown options loaded from DB
+  const clientOptions = filtersMetadata?.clients || ["All"];
+  const machineOptions = filtersMetadata?.machines || ["All"];
+  const dieOptions = filtersMetadata?.dies || ["All"];
+  const periodOptions = filtersMetadata?.periods || [
+    { label: "All Time", value: "all" },
+    { label: "Today", value: "today" },
+    { label: "Last 7 Days", value: "last_7_days" },
+    { label: "Last Month", value: "last_month" },
+    { label: "Year to Date", value: "ytd" },
   ];
 
-  const [summary, setSummary] = useState({
+  const summary = stats?.summary || {
     total_parts: 0,
     defective_parts: 0,
     defect_rate: 0,
-  });
+    period_label: "All Time",
+    subtitle_period: "Loading Live Telemetry...",
+    subtitle_defects: "0 defective parts",
+  };
 
-  useEffect(() => {
-    DashboardService
-      .getSummary()
-      .then((data) => {
-        setSummary(data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+  const defects = stats?.defects_breakdown || [];
+  const chartData = stats?.chart_data || [];
 
   return (
     <div className="space-y-4">
@@ -116,87 +64,150 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-gray-300 text-xs font-semibold tracking-wider bg-[#151C2C] px-3 py-1.5 rounded-full border border-gray-800/80 shrink-0 w-fit">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="font-mono text-[10px]">LIVE TELEMETRY</span>
+        <div className="flex items-center gap-2">
+          {error && (
+            <button
+              onClick={() => refetch()}
+              className="px-2.5 py-1 text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/40 rounded-lg hover:bg-red-500/30 transition-colors cursor-pointer"
+            >
+              Retry Sync
+            </button>
+          )}
+
+          {/* Dynamic Telemetry Status Indicator */}
+          {isFetchingNewFilter ? (
+            <div className="flex items-center gap-2 text-yellow-300 text-xs font-semibold tracking-wider bg-yellow-950/40 border border-yellow-500/50 px-3 py-1.5 rounded-full shrink-0 w-fit">
+              <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping" />
+              <span className="font-mono text-[10px]">FETCHING NEW FILTER...</span>
+            </div>
+          ) : isFetching ? (
+            <div className="flex items-center gap-2 text-cyan-300 text-xs font-semibold tracking-wider bg-cyan-950/40 border border-cyan-500/40 px-3 py-1.5 rounded-full shrink-0 w-fit">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="font-mono text-[10px]">SYNCING (CACHED)</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-gray-300 text-xs font-semibold tracking-wider bg-[#151C2C] px-3 py-1.5 rounded-full border border-gray-800/80 shrink-0 w-fit">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="font-mono text-[10px]">LIVE TELEMETRY</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Filters Bar */}
+      {/* Dynamic Filters Bar Loaded Directly From Database */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <CustomDropdown
           label="CLIENT"
-          options={clients}
+          options={clientOptions}
           value={selectedClient}
           onChange={setSelectedClient}
         />
         <CustomDropdown
           label="MACHINE"
-          options={machines}
+          options={machineOptions}
           value={selectedMachine}
           onChange={setSelectedMachine}
         />
         <CustomDropdown
           label="DIE"
-          options={dies}
+          options={dieOptions}
           value={selectedDie}
           onChange={setSelectedDie}
         />
         <CustomDropdown
           label="PERIOD"
-          options={periods}
+          options={periodOptions}
           value={selectedPeriod}
           onChange={setSelectedPeriod}
         />
       </div>
 
+      {/* Subtle Animated Progress Line when fetching a new filter */}
+      {isFetchingNewFilter && (
+        <div className="w-full h-1 bg-[#151C2C] rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-cyan-400 via-yellow-400 to-cyan-500 animate-pulse w-full" />
+        </div>
+      )}
 
-      {/* Stats Summary Cards — Reusable Component with Title (Top-Left), Info (Top-Right), Centered Number */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Stats Summary Cards — Instant from Cache / Loader if New */}
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${
+          isFetchingNewFilter ? "opacity-75" : "opacity-100"
+        }`}
+      >
         <SummaryCard
           title="Total Parts Produced"
-          topRightText="Live Stream"
-          value={summary.total_parts.toLocaleString()}
-          subtitle="Last Month • 850T-1 • incl. warm-up"
+          topRightText={isFetchingNewFilter ? "Syncing..." : "Live Stream"}
+          value={
+            isFetchingNewFilter && !stats
+              ? "..."
+              : summary.total_parts.toLocaleString()
+          }
+          subtitle={
+            summary.subtitle_period ||
+            `${summary.period_label || "All Time"} • Production`
+          }
           variant="cyan"
         />
 
         <SummaryCard
           title="Total Defective Parts"
-          topRightText="Sync Active"
-          value={summary.defective_parts.toLocaleString()}
-          subtitle="Incl. 3,352 warm-up defects"
+          topRightText={isFetchingNewFilter ? "Syncing..." : "Sync Active"}
+          value={
+            isFetchingNewFilter && !stats
+              ? "..."
+              : summary.defective_parts.toLocaleString()
+          }
+          subtitle={
+            summary.subtitle_defects ||
+            `${summary.defective_parts.toLocaleString()} defects`
+          }
           variant="red"
         />
 
         <SummaryCard
           title="% Defect Rate"
           topRightText="Target <15%"
-          value={`${summary.defect_rate}%`}
-          subtitle={`${summary.defective_parts.toLocaleString()} of ${summary.total_parts.toLocaleString()} parts`}
-          variant="yellow"
+          value={
+            isFetchingNewFilter && !stats ? "..." : `${summary.defect_rate}%`
+          }
+          subtitle={
+            summary.total_parts > 0
+              ? `${summary.defective_parts.toLocaleString()} of ${summary.total_parts.toLocaleString()} parts`
+              : "0 parts in selected period"
+          }
+          variant={summary.defect_rate <= 15 ? "green" : "yellow"}
         />
       </div>
 
       {/* Analytics Main Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
-        {/* Pie Chart Card (Made Larger) */}
-        <div className="lg:col-span-5 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col justify-between">
+        {/* Dynamic Pie Chart Card */}
+        <div className="lg:col-span-5 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col justify-between relative min-h-[360px]">
           <div className="flex justify-between items-center pb-2 border-b border-[#252D3D]/60">
             <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase">
               Defect Distribution
             </h2>
             <span className="text-gray-400 text-[11px] font-mono font-semibold">
-              n = {summary.defective_parts.toLocaleString()}
+              n ={" "}
+              {isFetchingNewFilter && !stats
+                ? "..."
+                : summary.defective_parts.toLocaleString()}
             </span>
           </div>
+
           <div className="flex-1 w-full flex items-center justify-center my-2">
-            <DefectPieChart />
+            <DefectPieChart
+              data={chartData}
+              defectRate={summary.defect_rate}
+              totalDefects={summary.defective_parts}
+              isLoading={isFetchingNewFilter && !stats}
+            />
           </div>
         </div>
 
-        {/* Breakdown Card */}
-        <div className="lg:col-span-7 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col">
+        {/* Dynamic Breakdown Card */}
+        <div className="lg:col-span-7 bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col relative min-h-[360px]">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 mb-3 pb-2 border-b border-[#252D3D]">
             <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase">
               Defect Breakdown
@@ -206,65 +217,132 @@ export default function DashboardPage() {
             </span>
           </div>
 
+          {/* Loader Overlay when fetching a brand new filter combination */}
+          {isFetchingNewFilter && (
+            <div className="absolute inset-x-0 bottom-0 top-12 bg-[#151C2C]/75 backdrop-blur-[2px] rounded-b-xl flex flex-col items-center justify-center z-10 transition-opacity">
+              <div className="w-8 h-8 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin mb-2" />
+              <p className="text-xs font-mono text-cyan-400 font-semibold tracking-wide">
+                Fetching Telemetry for {selectedDie} ({selectedPeriod})...
+              </p>
+            </div>
+          )}
+
+          {/* If No Defects in Selected Filter */}
+          {!isFetchingNewFilter && defects.length === 0 && (
+            <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-gray-500">
+              <svg
+                className="w-10 h-10 mb-2 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-xs font-semibold text-gray-400">
+                {summary.total_parts === 0
+                  ? "No parts manufactured for the selected filter combination."
+                  : "Zero defects recorded for this selection. Quality is optimal!"}
+              </p>
+            </div>
+          )}
+
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-[10px] text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2">
-                  <th className="pb-2 font-extrabold">Defect Category</th>
-                  <th className="pb-2 font-extrabold">Count</th>
-                  <th className="pb-2 font-extrabold">% Defects</th>
-                  <th className="pb-2 font-extrabold">Defect Rate</th>
-                  <th className="pb-2 font-extrabold">Share</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#252D3D]/40 text-xs font-semibold">
-                {defects.map((item) => (
-                  <tr key={item.name} className="hover:bg-[#1E293B]/40 transition-colors">
-                    <td className="py-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${item.color} shrink-0`} />
-                        <span className="text-gray-200">{item.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-2 text-white font-mono">{item.count}</td>
-                    <td className="py-2 text-gray-300 font-mono">{item.percent}</td>
-                    <td className="py-2 text-gray-300 font-mono">{item.rate}</td>
-                    <td className="py-2 w-28 sm:w-32">
-                      <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className={`${item.color} h-full rounded-full`}
-                          style={{ width: item.width }}
-                        />
-                      </div>
-                    </td>
+          {defects.length > 0 && (
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-[10px] text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2">
+                    <th className="pb-2 font-extrabold">Defect Category</th>
+                    <th className="pb-2 font-extrabold">Count</th>
+                    <th className="pb-2 font-extrabold">% Defects</th>
+                    <th className="pb-2 font-extrabold">Defect Rate</th>
+                    <th className="pb-2 font-extrabold">Share</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#252D3D]/40 text-xs font-semibold">
+                  {defects.map((item) => (
+                    <tr
+                      key={item.name}
+                      className="hover:bg-[#1E293B]/40 transition-colors"
+                    >
+                      <td className="py-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2 h-2 rounded-full ${item.color} shrink-0`}
+                          />
+                          <span className="text-gray-200">{item.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-2 text-white font-mono">
+                        {item.formatted_count}
+                      </td>
+                      <td className="py-2 text-gray-300 font-mono">
+                        {item.percent}
+                      </td>
+                      <td className="py-2 text-gray-300 font-mono">{item.rate}</td>
+                      <td className="py-2 w-28 sm:w-32">
+                        <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`${item.color} h-full rounded-full transition-all duration-500`}
+                            style={{ width: item.width }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Mobile Card List View */}
-          <div className="md:hidden space-y-2">
-            {defects.map((item) => (
-              <div key={item.name} className="bg-[#111827] border border-[#252D3D] rounded-lg p-2.5 space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${item.color}`} />
-                    <span className="text-gray-200 font-bold text-xs">{item.name}</span>
+          {defects.length > 0 && (
+            <div className="md:hidden space-y-2">
+              {defects.map((item) => (
+                <div
+                  key={item.name}
+                  className="bg-[#111827] border border-[#252D3D] rounded-lg p-2.5 space-y-1.5"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                      <span className="text-gray-200 font-bold text-xs">
+                        {item.name}
+                      </span>
+                    </div>
+                    <span className="text-cyan-400 font-bold text-xs font-mono">
+                      {item.formatted_count}
+                    </span>
                   </div>
-                  <span className="text-cyan-400 font-bold text-xs font-mono">{item.count}</span>
+                  <div className="flex justify-between text-[10px] text-gray-400 font-medium">
+                    <span>
+                      Share:{" "}
+                      <strong className="text-gray-200 font-mono">
+                        {item.percent}
+                      </strong>
+                    </span>
+                    <span>
+                      Rate:{" "}
+                      <strong className="text-gray-200 font-mono">
+                        {item.rate}
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`${item.color} h-full rounded-full transition-all duration-500`}
+                      style={{ width: item.width }}
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between text-[10px] text-gray-400 font-medium">
-                  <span>Share: <strong className="text-gray-200 font-mono">{item.percent}</strong></span>
-                  <span>Rate: <strong className="text-gray-200 font-mono">{item.rate}</strong></span>
-                </div>
-                <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
-                  <div className={`${item.color} h-full rounded-full`} style={{ width: item.width }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

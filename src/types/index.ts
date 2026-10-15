@@ -52,6 +52,50 @@ export interface DashboardSummary {
   total_parts: number;
   defective_parts: number;
   defect_rate: number;
+  period_label?: string;
+  subtitle_period?: string;
+  subtitle_defects?: string;
+}
+
+export interface DashboardFilterOption {
+  label: string;
+  value: string;
+}
+
+export interface DashboardFiltersMetadata {
+  clients: string[];
+  machines: string[];
+  dies: string[];
+  periods: DashboardFilterOption[];
+}
+
+export interface DefectBreakdownRow {
+  name: string;
+  count: number;
+  formatted_count: string;
+  percent: string;
+  rate: string;
+  color: string;
+  width: string;
+}
+
+export interface ChartSlice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface DashboardStatsResponse {
+  summary: DashboardSummary;
+  defects_breakdown: DefectBreakdownRow[];
+  chart_data: ChartSlice[];
+}
+
+export interface DashboardFilterParams {
+  client?: string;
+  machine?: string;
+  die?: string;
+  period?: string;
 }
 
 // ─── Monitor / Predictor Types ────────────────────────────────────────
