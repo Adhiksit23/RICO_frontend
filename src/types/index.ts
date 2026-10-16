@@ -76,6 +76,7 @@ export interface DefectBreakdownRow {
   percent: string;
   rate: string;
   color: string;
+  hex: string;
   width: string;
 }
 
