@@ -12,9 +12,21 @@ export const CalibrationService = {
       .get<CalibrationLatestResponse>('/api/calibration/latest', { params: { machine, die } })
       .then((r) => r.data),
 
-  getRanges: (machine: string, die: string): Promise<CalibrationRangesResponse> =>
+  getRanges: (
+    machine: string,
+    die: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<CalibrationRangesResponse> =>
     axiosInstance
-      .get<CalibrationRangesResponse>('/api/calibration/ranges', { params: { machine, die } })
+      .get<CalibrationRangesResponse>('/api/calibration/ranges', {
+        params: {
+          machine,
+          die,
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
+        },
+      })
       .then((r) => r.data),
 
   apply: (

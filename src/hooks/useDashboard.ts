@@ -1,7 +1,11 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { DashboardService } from '@/services';
 import { useDashboardStore } from '@/store/dashboardStore';
-import type { DashboardFilterParams } from '@/types';
+import type {
+  DashboardFilterParams,
+  PeriodCompareParams,
+  LongitudinalParams,
+} from '@/types';
 
 export function useDashboardFilters() {
   return useQuery({
@@ -22,12 +26,38 @@ export function useDashboardStats(params?: DashboardFilterParams) {
         machine: params?.machine || 'All',
         die: params?.die || 'All',
         period: params?.period || 'all',
+        start_date: params?.start_date || '',
+        end_date: params?.end_date || '',
       },
     ],
     queryFn: () => DashboardService.getStats(params),
     staleTime: 60 * 1000, // 1 minute fresh
     gcTime: 10 * 60 * 1000, // 10 minutes cache
-    placeholderData: keepPreviousData, // Keeps previous numbers while new filter fetches for silky smooth UX
+    placeholderData: keepPreviousData, // Keeps previous numbers while new filter fetches
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePeriodCompare(params?: PeriodCompareParams, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['dashboard', 'compare', params],
+    queryFn: () => DashboardService.compare(params),
+    enabled,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useLongitudinalDefects(params?: LongitudinalParams, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['dashboard', 'longitudinal', params],
+    queryFn: () => DashboardService.getLongitudinal(params),
+    enabled,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
   });
 }
@@ -38,10 +68,15 @@ export function useDashboard() {
     selectedMachine,
     selectedDie,
     selectedPeriod,
+    startDate,
+    endDate,
     setSelectedClient,
     setSelectedMachine,
     setSelectedDie,
     setSelectedPeriod,
+    setStartDate,
+    setEndDate,
+    setCustomDateRange,
     resetFilters,
   } = useDashboardStore();
 
@@ -51,6 +86,8 @@ export function useDashboard() {
     machine: selectedMachine,
     die: selectedDie,
     period: selectedPeriod,
+    start_date: selectedPeriod === 'custom' ? startDate : undefined,
+    end_date: selectedPeriod === 'custom' ? endDate : undefined,
   });
 
   return {
@@ -59,10 +96,15 @@ export function useDashboard() {
     selectedMachine,
     selectedDie,
     selectedPeriod,
+    startDate,
+    endDate,
     setSelectedClient,
     setSelectedMachine,
     setSelectedDie,
     setSelectedPeriod,
+    setStartDate,
+    setEndDate,
+    setCustomDateRange,
     resetFilters,
 
     // Data from React Query
@@ -76,3 +118,4 @@ export function useDashboard() {
     refetch: statsQuery.refetch,
   };
 }
+

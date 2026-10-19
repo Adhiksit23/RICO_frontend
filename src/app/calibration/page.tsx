@@ -65,6 +65,9 @@ export default function CalibrationPage() {
   
   const [selectedMachine, setSelectedMachine] = useState("UBE 850T-2");
   const [selectedDie, setSelectedDie] = useState("S16");
+  const [sampleRangeMode, setSampleRangeMode] = useState("All Historical Data");
+  const [sampleStartDate, setSampleStartDate] = useState("");
+  const [sampleEndDate, setSampleEndDate] = useState("");
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -138,7 +141,9 @@ export default function CalibrationPage() {
     setIsCalculating(true);
     setStatusMessage("");
     try {
-      const data = await CalibrationService.getRanges(selectedMachine, selectedDie);
+      const start = sampleRangeMode === "Custom Date Range" && sampleStartDate ? sampleStartDate : undefined;
+      const end = sampleRangeMode === "Custom Date Range" && sampleEndDate ? sampleEndDate : undefined;
+      const data = await CalibrationService.getRanges(selectedMachine, selectedDie, start, end);
       
       setRanges(data.ranges || {});
       setSummary({ samples_analyzed: data.samples_analyzed || 0 });
@@ -159,14 +164,19 @@ export default function CalibrationPage() {
       setLatestRanges(rangeInputs);
       setIsCalculated(true);
 
-      setStatusMessage("Calculated optimized windows successfully.");
-      setStatusType("success");
+      if ((data.samples_analyzed || 0) === 0) {
+        setStatusMessage("No non-defective parts found in the selected date range. Try widening the window.");
+        setStatusType("error");
+      } else {
+        setStatusMessage(`Calculated optimized windows from ${data.samples_analyzed} pristine sample parts.`);
+        setStatusType("success");
+      }
     } catch {
       setStatusMessage("Failed to calculate targeted calibration ranges.");
       setStatusType("error");
     } finally {
       setIsCalculating(false);
-      setTimeout(() => setStatusMessage(""), 4000);
+      setTimeout(() => setStatusMessage(""), 5000);
     }
   };
 
@@ -267,32 +277,70 @@ export default function CalibrationPage() {
       </div>
 
       {/* Selectors & Calculate Action */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#121B2B] border border-[#1F2937] rounded-xl p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <CustomDropdown
-            label="Machine"
-            options={machines}
-            value={selectedMachine}
-            onChange={setSelectedMachine}
-            className="w-full sm:w-48"
-          />
-          <CustomDropdown
-            label="Die"
-            options={dies}
-            value={selectedDie}
-            onChange={setSelectedDie}
-            className="w-full sm:w-36"
-          />
+      <div className="flex flex-col gap-3 bg-[#121B2B] border border-[#1F2937] rounded-xl p-4">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <CustomDropdown
+              label="Machine"
+              options={machines}
+              value={selectedMachine}
+              onChange={setSelectedMachine}
+              className="w-full sm:w-44"
+            />
+            <CustomDropdown
+              label="Die"
+              options={dies}
+              value={selectedDie}
+              onChange={setSelectedDie}
+              className="w-full sm:w-32"
+            />
+            <CustomDropdown
+              label="Sample Window"
+              options={["All Historical Data", "Custom Date Range"]}
+              value={sampleRangeMode}
+              onChange={setSampleRangeMode}
+              className="w-full sm:w-48"
+            />
+          </div>
+
+          <button
+            onClick={calculateCalibration}
+            disabled={isCalculating || isApplying}
+            className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider text-white transition-colors cursor-pointer w-full lg:w-auto shrink-0 shadow-lg shadow-purple-600/20"
+          >
+            {isCalculating ? "Calculating..." : "Calculate Calibration"}
+          </button>
         </div>
 
-
-        <button
-          onClick={calculateCalibration}
-          disabled={isCalculating || isApplying}
-          className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 px-6 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider text-white transition-colors cursor-pointer w-full sm:w-auto"
-        >
-          {isCalculating ? "Calculating..." : "Calculate Calibration"}
-        </button>
+        {/* Custom Date Range Picker for Sample Selection */}
+        {sampleRangeMode === "Custom Date Range" && (
+          <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-[#1F2937]/70 text-xs">
+            <span className="text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+              Sample Period:
+            </span>
+            <div className="flex items-center gap-2">
+              <label className="text-gray-400 font-medium text-[11px]">From:</label>
+              <input
+                type="date"
+                value={sampleStartDate}
+                onChange={(e) => setSampleStartDate(e.target.value)}
+                className="bg-[#151C2C] border border-[#252D3D] text-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none transition-colors"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-gray-400 font-medium text-[11px]">To:</label>
+              <input
+                type="date"
+                value={sampleEndDate}
+                onChange={(e) => setSampleEndDate(e.target.value)}
+                className="bg-[#151C2C] border border-[#252D3D] text-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none transition-colors"
+              />
+            </div>
+            <span className="text-gray-500 text-[11px] italic">
+              (Limits tolerance calculation to non-defective parts within this date window)
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Main Recipe Optimization Window */}
