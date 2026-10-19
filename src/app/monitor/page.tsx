@@ -237,12 +237,12 @@ export default function MonitorPage() {
               {raw?.timestamp ? formatIstDateTime(raw.timestamp) : "Loading..."}
             </div>
           </div>
-          {/* <div>
+          <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Verdict</div>
             <div className={`font-bold text-xs sm:text-sm mt-0.5 ${!isDataLoaded ? "text-gray-400" : (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
-              {isDataLoaded ? (totalParamsCount - okCount > 3) ? "REJECT" : "PASS" : "..."} 
+              {isDataLoaded ? (totalParamsCount - okCount > 4) ? "REJECT" : "PASS" : "..."} 
             </div>
-          </div> */}
+          </div>
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Params</div>
             <div className="text-yellow-400 font-semibold text-xs sm:text-sm mt-0.5 font-mono">

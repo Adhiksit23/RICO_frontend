@@ -23,20 +23,7 @@ type BackendCalibrationItem = {
   baseline: number;
   min_range: number;
   max_range: number;
-};
-
-
-const getUnit = (key: string): string => {
-  const lower = key.toLowerCase();
-  if (lower.includes("mm")) return "mm";
-  if (lower.includes("bar") || lower.includes("pressure")) return "bar";
-  if (lower.includes("%")) return "%";
-  if (lower.includes("sec") || lower.includes("time")) return "s";
-  if (lower.includes("°c") || lower.includes("temperature")) return "°C";
-  if (lower.includes("l/min")) return "L/min";
-  if (lower.includes("m/s") || lower.includes("speed")) return "m/s";
-  if (lower.includes("(t)")) return "T";
-  return "";
+  unit: string;
 };
 
 type SummaryData = {
@@ -101,7 +88,8 @@ export default function CalibrationPage() {
             baseline: value.baseline,
             min_range: value.min_range,
             max_range: value.max_range,
-            tolerance: 0
+            tolerance: 0,
+            unit: value.unit,
           };
           
           formattedSnapshot[normalized] = safeParseNumber(value.baseline);
@@ -324,8 +312,7 @@ export default function CalibrationPage() {
                 <div className="divide-y divide-[#182232]">
                   {LatestRows.map(([key, value], index) => {
                     const norm = normalizeKey(key);
-                    // console.log(norm)
-                    const unit = value?.unit || getUnit(key);
+                    const unit = value?.unit;
                     return (
                       <div key={index} className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-[#182335]/30 transition-colors">
                         <div className="col-span-5">
@@ -379,7 +366,7 @@ export default function CalibrationPage() {
             <div className="md:hidden space-y-4">
               {LatestRows.map(([key, value], index) => {
                 const norm = normalizeKey(key);
-                const unit = value?.unit || getUnit(key);
+                const unit = value?.unit;
                 return (
                   <div key={index} className="bg-[#07111F] border border-[#1F2937] rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-start">
