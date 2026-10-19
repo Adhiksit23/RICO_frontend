@@ -383,7 +383,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#252D3D]/40 text-xs font-semibold">
-                  {defects.map((item) => (
+                  {defects.map((item) => (  
                     <tr
                       key={item.name}
                       className="hover:bg-[#1E293B]/40 transition-colors"
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                       <td className="py-2">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`w-2 h-2 rounded-full ${item.color} shrink-0`}
+                            className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: item.hex}}
                           />
                           <span className="text-gray-200">{item.name}</span>
                         </div>
@@ -406,8 +406,8 @@ export default function DashboardPage() {
                       <td className="py-2 w-28 sm:w-32">
                         <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
                           <div
-                            className={`${item.color} h-full rounded-full transition-all duration-500`}
-                            style={{ width: item.width }}
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: item.width, backgroundColor: item.hex }}
                           />
                         </div>
                       </td>
@@ -428,7 +428,7 @@ export default function DashboardPage() {
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${item.color}`} />
+                      <span className="w-2 h-2 rounded-full" style={{backgroundColor: item.hex}} />
                       <span className="text-gray-200 font-bold text-xs">
                         {item.name}
                       </span>
@@ -453,8 +453,8 @@ export default function DashboardPage() {
                   </div>
                   <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
                     <div
-                      className={`${item.color} h-full rounded-full transition-all duration-500`}
-                      style={{ width: item.width }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: item.width, backgroundColor: item.hex }}
                     />
                   </div>
                 </div>
