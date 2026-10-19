@@ -1,20 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import DefectPieChart from "@/components/DefectPieChart";
 import SummaryCard from "@/components/SummaryCard";
 import CustomDropdown from "@/components/CustomDropdown";
+import DefectsComparisonView from "@/components/DefectsComparisonView";
+import DefectsLongitudinalView from "@/components/DefectsLongitudinalView";
 import { useDashboard } from "@/hooks/useDashboard";
 
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState<"overview" | "compare" | "longitudinal">("overview");
+
   const {
     selectedClient,
     selectedMachine,
     selectedDie,
     selectedPeriod,
+    startDate,
+    endDate,
     setSelectedClient,
     setSelectedMachine,
     setSelectedDie,
     setSelectedPeriod,
+    setStartDate,
+    setEndDate,
     filtersMetadata,
     stats,
     isLoading,
@@ -37,6 +46,7 @@ export default function DashboardPage() {
     { label: "Last 7 Days", value: "last_7_days" },
     { label: "Last Month", value: "last_month" },
     { label: "Year to Date", value: "ytd" },
+    { label: "Custom Range", value: "custom" },
   ];
 
   const summary = stats?.summary || {
@@ -60,7 +70,7 @@ export default function DashboardPage() {
             DEFECTS DASHBOARD
           </h1>
           <p className="text-gray-400 mt-1 text-xs font-medium">
-            Production quality overview & defect distribution analytics
+            Production quality overview, period comparison & longitudinal defect analytics
           </p>
         </div>
 
@@ -94,7 +104,52 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Dynamic Filters Bar Loaded Directly From Database */}
+      {/* View Switcher Segmented Tabs */}
+      <div className="flex items-center gap-2 border-b border-[#252D3D] pb-1 overflow-x-auto">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === "overview"
+              ? "border-cyan-400 text-cyan-400 bg-cyan-950/20 rounded-t-md"
+              : "border-transparent text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <span>Overview</span>
+          <span className="text-[10px] bg-[#1E293B] text-gray-300 px-1.5 py-0.5 rounded font-mono">
+            Live
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("compare")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === "compare"
+              ? "border-cyan-400 text-cyan-400 bg-cyan-950/20 rounded-t-md"
+              : "border-transparent text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <span>Period Comparison</span>
+          <span className="text-[10px] bg-cyan-900/50 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold">
+            Δ Diff
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("longitudinal")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === "longitudinal"
+              ? "border-cyan-400 text-cyan-400 bg-cyan-950/20 rounded-t-md"
+              : "border-transparent text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <span>Longitudinal Analysis</span>
+          <span className="text-[10px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded font-mono font-bold">
+            Trend
+          </span>
+        </button>
+      </div>
+
+      {/* Global Filter Bar (Client, Machine, Die, and Period for Overview/Longitudinal) */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <CustomDropdown
           label="CLIENT"
@@ -122,6 +177,44 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* From and To Date Inputs when Period is Custom Range */}
+      {selectedPeriod === "custom" && (
+        <div className="flex flex-wrap items-center gap-3 bg-[#151C2C] border border-[#252D3D] rounded-xl p-3 text-xs">
+          <span className="text-gray-400 font-semibold uppercase tracking-wider text-[11px]">
+            Custom Range:
+          </span>
+          <div className="flex items-center gap-2">
+            <label className="text-gray-400 font-medium text-[11px]">From:</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-[#111827] border border-[#252D3D] text-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-gray-400 font-medium text-[11px]">To:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-[#111827] border border-[#252D3D] text-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none transition-colors"
+            />
+          </div>
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="text-gray-500 hover:text-gray-300 text-[11px] underline ml-auto cursor-pointer"
+            >
+              Reset Dates
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Subtle Animated Progress Line when fetching a new filter */}
       {isFetchingNewFilter && (
         <div className="w-full h-1 bg-[#151C2C] rounded-full overflow-hidden">
@@ -129,56 +222,81 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Stats Summary Cards — Instant from Cache / Loader if New */}
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${
-          isFetchingNewFilter ? "opacity-75" : "opacity-100"
-        }`}
-      >
-        <SummaryCard
-          title="Total Parts Produced"
-          topRightText={isFetchingNewFilter ? "Syncing..." : "Live Stream"}
-          value={
-            isFetchingNewFilter && !stats
-              ? "..."
-              : summary.total_parts.toLocaleString()
-          }
-          subtitle={
-            summary.subtitle_period ||
-            `${summary.period_label || "All Time"} • Production`
-          }
-          variant="cyan"
+      {/* ─── TAB 2: PERIOD COMPARISON VIEW ─────────────────────────── */}
+      {activeTab === "compare" && (
+        <DefectsComparisonView
+          client={selectedClient}
+          machine={selectedMachine}
+          die={selectedDie}
+          periodOptions={periodOptions}
         />
+      )}
 
-        <SummaryCard
-          title="Total Defective Parts"
-          topRightText={isFetchingNewFilter ? "Syncing..." : "Sync Active"}
-          value={
-            isFetchingNewFilter && !stats
-              ? "..."
-              : summary.defective_parts.toLocaleString()
-          }
-          subtitle={
-            summary.subtitle_defects ||
-            `${summary.defective_parts.toLocaleString()} defects`
-          }
-          variant="red"
+      {/* ─── TAB 3: LONGITUDINAL ANALYSIS VIEW ───────────────────────── */}
+      {activeTab === "longitudinal" && (
+        <DefectsLongitudinalView
+          client={selectedClient}
+          machine={selectedMachine}
+          die={selectedDie}
+          period={selectedPeriod}
+          startDate={startDate}
+          endDate={endDate}
         />
+      )}
 
-        <SummaryCard
-          title="% Defect Rate"
-          topRightText="Target <15%"
-          value={
-            isFetchingNewFilter && !stats ? "..." : `${summary.defect_rate}%`
-          }
-          subtitle={
-            summary.total_parts > 0
-              ? `${summary.defective_parts.toLocaleString()} of ${summary.total_parts.toLocaleString()} parts`
-              : "0 parts in selected period"
-          }
-          variant={summary.defect_rate <= 15 ? "green" : "yellow"}
-        />
-      </div>
+      {/* ─── TAB 1: STANDARD OVERVIEW VIEW ──────────────────────────── */}
+      {activeTab === "overview" && (
+        <>
+          {/* Stats Summary Cards — Instant from Cache / Loader if New */}
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-3 gap-3 transition-opacity duration-200 ${
+              isFetchingNewFilter ? "opacity-75" : "opacity-100"
+            }`}
+          >
+            <SummaryCard
+              title="Total Parts Produced"
+              topRightText={isFetchingNewFilter ? "Syncing..." : "Live Stream"}
+              value={
+                isFetchingNewFilter && !stats
+                  ? "..."
+                  : summary.total_parts.toLocaleString()
+              }
+              subtitle={
+                summary.subtitle_period ||
+                `${summary.period_label || "All Time"} • Production`
+              }
+              variant="cyan"
+            />
+
+            <SummaryCard
+              title="Total Defective Parts"
+              topRightText={isFetchingNewFilter ? "Syncing..." : "Sync Active"}
+              value={
+                isFetchingNewFilter && !stats
+                  ? "..."
+                  : summary.defective_parts.toLocaleString()
+              }
+              subtitle={
+                summary.subtitle_defects ||
+                `${summary.defective_parts.toLocaleString()} defects`
+              }
+              variant="red"
+            />
+
+            <SummaryCard
+              title="% Defect Rate"
+              topRightText="Target <15%"
+              value={
+                isFetchingNewFilter && !stats ? "..." : `${summary.defect_rate}%`
+              }
+              subtitle={
+                summary.total_parts > 0
+                  ? `${summary.defective_parts.toLocaleString()} of ${summary.total_parts.toLocaleString()} parts`
+                  : "0 parts in selected period"
+              }
+              variant={summary.defect_rate <= 15 ? "green" : "yellow"}
+            />
+          </div>
 
       {/* Analytics Main Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
@@ -345,6 +463,8 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

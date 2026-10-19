@@ -4,6 +4,10 @@ import type {
   DashboardFiltersMetadata,
   DashboardStatsResponse,
   DashboardSummary,
+  PeriodCompareParams,
+  PeriodCompareResponse,
+  LongitudinalParams,
+  LongitudinalResponse,
 } from '@/types';
 
 export const DashboardService = {
@@ -22,6 +26,22 @@ export const DashboardService = {
       .then((r) => r.data),
 
   /**
+   * Compare two distinct periods to show defect increases or decreases.
+   */
+  compare: (params?: PeriodCompareParams): Promise<PeriodCompareResponse> =>
+    axiosInstance
+      .get<PeriodCompareResponse>('/api/dashboard/compare', { params })
+      .then((r) => r.data),
+
+  /**
+   * Time-series longitudinal defect analysis.
+   */
+  getLongitudinal: (params?: LongitudinalParams): Promise<LongitudinalResponse> =>
+    axiosInstance
+      .get<LongitudinalResponse>('/api/dashboard/longitudinal', { params })
+      .then((r) => r.data),
+
+  /**
    * Backward-compatible summary fetch.
    */
   getSummary: (params?: DashboardFilterParams): Promise<DashboardSummary> =>
@@ -29,3 +49,4 @@ export const DashboardService = {
       .get<DashboardSummary>('/api/dashboard/summary', { params })
       .then((r) => r.data),
 };
+

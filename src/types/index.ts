@@ -97,6 +97,74 @@ export interface DashboardFilterParams {
   machine?: string;
   die?: string;
   period?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface DefectComparisonRow {
+  category: string;
+  p1_count: number;
+  p1_rate: number;
+  p2_count: number;
+  p2_rate: number;
+  count_diff: number;
+  rate_diff: number;
+  relative_change: number;
+  status: 'improved' | 'degraded' | 'unchanged';
+}
+
+export interface PeriodCompareParams {
+  client?: string;
+  machine?: string;
+  die?: string;
+  p1_period?: string;
+  p1_start?: string;
+  p1_end?: string;
+  p2_period?: string;
+  p2_start?: string;
+  p2_end?: string;
+}
+
+export interface PeriodCompareResponse {
+  period_1: DashboardSummary;
+  period_2: DashboardSummary;
+  delta: {
+    rate_diff: number;
+    relative_change: number;
+    total_parts_diff: number;
+    defective_diff: number;
+    status: 'improved' | 'degraded' | 'unchanged';
+    status_text: string;
+  };
+  defect_comparison: DefectComparisonRow[];
+}
+
+export interface LongitudinalPoint {
+  date: string;
+  label: string;
+  total_parts: number;
+  defective_parts: number;
+  defect_rate: number;
+  defects: Record<string, number>;
+  [key: string]: string | number | Record<string, number>;
+}
+
+export interface LongitudinalParams {
+  client?: string;
+  machine?: string;
+  die?: string;
+  period?: string;
+  start_date?: string;
+  end_date?: string;
+  interval?: 'day' | 'week' | 'month';
+}
+
+export interface LongitudinalResponse {
+  interval: 'day' | 'week' | 'month';
+  period_label: string;
+  categories: string[];
+  timeline: LongitudinalPoint[];
+  total_buckets: number;
 }
 
 // ─── Monitor / Predictor Types ────────────────────────────────────────
