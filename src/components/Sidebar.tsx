@@ -82,20 +82,30 @@ export default function Sidebar({ onNavClick, isMobile = false }: SidebarProps) 
         })}
       </nav>
 
-      {/* Plant Status Snippet - Pinned to bottom */}
-      <div className="shrink-0 pt-4 border-t border-gray-800/60 mt-auto">
-        <div className="bg-[#111827] border border-gray-800/80 rounded-xl p-3">
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-gray-400 font-semibold text-[11px]">Plant Connection</span>
-            <span className="flex items-center gap-1.5 text-green-400 font-bold text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              ONLINE
+      {/* Branding Footer - Pinned to bottom */}
+      <div className="shrink-0 pt-3 border-t border-gray-800/60 mt-auto">
+        <a
+          href="https://www.neuriot.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center justify-between px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#0d172c] via-[#091122] to-[#070d1a] border border-cyan-500/40 hover:border-cyan-400 shadow-[0_0_14px_rgba(6,182,212,0.18)] hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all duration-300"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400 shadow-[0_0_4px_#22d3ee]" />
+            </span>
+            <span className="text-[11px] text-gray-400 font-medium truncate">
+              Powered by{" "}
+              <span className="text-cyan-300 group-hover:text-cyan-200 font-semibold tracking-wide transition-colors">
+                neurIOT Labs
+              </span>
             </span>
           </div>
-          <p className="text-[11px] text-gray-400 font-medium truncate">
-            {user?.plant_name || "Suzuki HPDC Plant #1"}
-          </p>
-        </div>
+          <span className="text-cyan-400/70 group-hover:text-cyan-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[10px] font-bold shrink-0 ml-1.5">
+            ↗
+          </span>
+        </a>
       </div>
     </div>
   );
