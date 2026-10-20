@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
 } from "react";
+import axios from "axios";
 import { CalibrationService } from "@/services";
 import CustomDropdown from "@/components/CustomDropdown";
 
@@ -159,9 +160,13 @@ export default function CalibrationPage() {
         setStatusMessage(`Calculated optimized windows from ${data.samples_analyzed} pristine sample parts.`);
         setStatusType("success");
       }
-    } catch {
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
+        setStatusMessage("Calculation timed out. Try a shorter date range or try again.");
+      } else {
       setStatusMessage("Failed to calculate targeted calibration ranges.");
-      setStatusType("error");
+    }
+    setStatusType("error");
     } finally {
       setIsCalculating(false);
       setTimeout(() => setStatusMessage(""), 5000);

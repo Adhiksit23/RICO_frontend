@@ -26,6 +26,7 @@ export const CalibrationService = {
           start_date: startDate || undefined,
           end_date: endDate || undefined,
         },
+        timeout: 300000 // Adjusted to 5 minutes to take into account large samples of historical data and network latency
       })
       .then((r) => r.data),
 
