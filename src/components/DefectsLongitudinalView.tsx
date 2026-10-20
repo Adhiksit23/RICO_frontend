@@ -86,11 +86,10 @@ export default function DefectsLongitudinalView({
               <button
                 key={int}
                 onClick={() => setInterval(int)}
-                className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                  interval === int
+                className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${interval === int
                     ? "bg-cyan-500 text-black shadow-sm"
                     : "text-gray-400 hover:text-white"
-                }`}
+                  }`}
               >
                 {int}
               </button>
@@ -105,21 +104,19 @@ export default function DefectsLongitudinalView({
           <div className="flex rounded-lg bg-[#151C2C] border border-[#252D3D] p-1">
             <button
               onClick={() => setChartType("rate")}
-              className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                chartType === "rate"
+              className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${chartType === "rate"
                   ? "bg-cyan-500 text-black shadow-sm"
                   : "text-gray-400 hover:text-white"
-              }`}
+                }`}
             >
               Defect Rate (%)
             </button>
             <button
               onClick={() => setChartType("categories")}
-              className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                chartType === "categories"
+              className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${chartType === "categories"
                   ? "bg-cyan-500 text-black shadow-sm"
                   : "text-gray-400 hover:text-white"
-              }`}
+                }`}
             >
               Categories Volume
             </button>
@@ -161,7 +158,7 @@ export default function DefectsLongitudinalView({
 
         <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-3.5">
           <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">
-            Total Telemetry Parts
+            Total Parts
           </span>
           <div className="text-xl font-bold font-mono text-white mt-0.5">
             {totalProduction.toLocaleString()}
@@ -311,9 +308,8 @@ export default function DefectsLongitudinalView({
                         {point.defective_parts.toLocaleString()}
                       </td>
                       <td
-                        className={`py-2.5 text-right font-bold ${
-                          point.defect_rate <= 15 ? "text-emerald-400" : "text-amber-400"
-                        }`}
+                        className={`py-2.5 text-right font-bold ${point.defect_rate <= 15 ? "text-emerald-400" : "text-amber-400"
+                          }`}
                       >
                         {point.defect_rate.toFixed(2)}%
                       </td>
