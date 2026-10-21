@@ -159,7 +159,7 @@ export default function LoginPage() {
         <div className="mt-6 pt-6 border-t border-gray-800/80 text-center">
           <p className="text-xs text-gray-400">
             Need a new Plant Admin account?{' '}
-            <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors">
+            <Link href="/signup/" prefetch={false} className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors">
               Create Account
             </Link>
           </p>

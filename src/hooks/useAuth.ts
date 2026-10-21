@@ -43,12 +43,12 @@ export function useLogin() {
         localStorage.setItem('rico_token', data.token);
       }
       setUser(data.user);
-      router.push('/dashboard');
+      router.push('/dashboard/');
     },
   });
 }
 
-/** Signup mutation — on success sets user & token, then redirects to /dashboard. */
+/** Signup mutation — on success sets user & token, then redirects to /dashboard/. */
 export function useSignup() {
   const { setUser } = useAuthStore();
   const router = useRouter();
@@ -60,12 +60,12 @@ export function useSignup() {
         localStorage.setItem('rico_token', data.token);
       }
       setUser(data.user);
-      router.push('/dashboard');
+      router.push('/dashboard/');
     },
   });
 }
 
-/** Logout mutation — on success clears token & Zustand, then redirects to /login. */
+/** Logout mutation — on success clears token & Zustand, then redirects to /login/. */
 export function useLogout() {
   const { clearUser } = useAuthStore();
   const router = useRouter();
@@ -77,19 +77,19 @@ export function useLogout() {
         localStorage.removeItem('rico_token');
       }
       clearUser();
-      router.push('/login');
+      router.push('/login/');
     },
     onError: () => {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('rico_token');
       }
       clearUser();
-      router.push('/login');
+      router.push('/login/');
     },
   });
 }
 
-/** Register-via-invite mutation — on success sets user & token, then redirects to /dashboard. */
+/** Register-via-invite mutation — on success sets user & token, then redirects to /dashboard/. */
 export function useRegisterViaInvite() {
   const { setUser } = useAuthStore();
   const router = useRouter();
@@ -101,7 +101,7 @@ export function useRegisterViaInvite() {
         localStorage.setItem('rico_token', data.token);
       }
       setUser(data.user);
-      router.push('/dashboard');
+      router.push('/dashboard/');
     },
   });
 }

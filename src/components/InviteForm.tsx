@@ -84,7 +84,7 @@ export default function InviteForm({ token }: { token: string }) {
           </div>
           <h2 className="text-lg font-bold text-white mb-2">Invalid Invite Link</h2>
           <p className="text-gray-500 text-sm mb-6">{tokenError}</p>
-          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors">
+          <Link href="/login/" prefetch={false} className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors">
             ← Back to Sign In
           </Link>
         </div>
@@ -198,7 +198,7 @@ export default function InviteForm({ token }: { token: string }) {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+          <Link href="/login/" prefetch={false} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
             Sign In
           </Link>
         </p>

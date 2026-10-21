@@ -8,8 +8,8 @@ import AuthGuard from '@/components/AuthGuard';
 
 const AUTH_PATHS = ['/login', '/signup', '/invite'];
 
-const isAuthPath = (path: string) =>
-  AUTH_PATHS.some((p) => path.startsWith(p));
+const isPublicPath = (path: string) =>
+  path === '/' || AUTH_PATHS.some((p) => path.startsWith(p));
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,7 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  if (isAuthPath(pathname)) {
+  if (isPublicPath(pathname)) {
     return (
       <div className="min-h-screen bg-[#0B1120] text-white">
         {children}

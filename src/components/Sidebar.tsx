@@ -22,13 +22,13 @@ export default function Sidebar({ onNavClick, isMobile = false }: SidebarProps) 
   const isAdmin = user?.role === "plant_admin";
 
   const menuItems = [
-    { name: "Defects Dashboard", path: "/dashboard", icon: DashboardIcon },
-    { name: "Monitor & Predict", path: "/monitor", icon: MonitorIcon },
-    { name: "Calibrate", path: "/calibration", icon: CalibrateIcon },
+    { name: "Defects Dashboard", path: "/dashboard/", icon: DashboardIcon },
+    { name: "Monitor & Predict", path: "/monitor/", icon: MonitorIcon },
+    { name: "Calibrate", path: "/calibration/", icon: CalibrateIcon },
   ];
 
   if (isAdmin) {
-    menuItems.push({ name: "User Management", path: "/admin", icon: UsersIcon });
+    menuItems.push({ name: "User Management", path: "/admin/", icon: UsersIcon });
   }
 
   return (
@@ -36,7 +36,7 @@ export default function Sidebar({ onNavClick, isMobile = false }: SidebarProps) 
       {/* Brand Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-800/80 shrink-0">
 
-        <Link href="/dashboard" onClick={onNavClick} className="flex items-center gap-3 group">
+        <Link href="/dashboard/" prefetch={false} onClick={onNavClick} className="flex items-center gap-3 group">
           <div className="w-9 h-9 bg-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
             <span className="text-black font-black text-lg tracking-tighter">R</span>
           </div>
@@ -63,11 +63,12 @@ export default function Sidebar({ onNavClick, isMobile = false }: SidebarProps) 
         </div>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.path;
+          const isActive = pathname === item.path || pathname === item.path.replace(/\/$/, "");
           return (
             <Link
               key={item.path}
               href={item.path}
+              prefetch={false}
               onClick={onNavClick}
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 isActive

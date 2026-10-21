@@ -26,19 +26,25 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 globally — redirect to login
+// Response interceptor: handle 401 globally — clear token and redirect if on a protected route
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('rico_token');
-        if (
-          !window.location.pathname.startsWith('/login') &&
-          !window.location.pathname.startsWith('/signup') &&
-          !window.location.pathname.startsWith('/invite')
-        ) {
-          window.location.href = '/login';
+        
+        // Do NOT force-redirect on initial auth probe (/api/auth/me) — let React Query & AuthGuard handle state
+        const isAuthProbe = error.config?.url?.includes('/auth/me');
+        if (!isAuthProbe) {
+          const path = window.location.pathname;
+          if (
+            !path.startsWith('/login') &&
+            !path.startsWith('/signup') &&
+            !path.startsWith('/invite')
+          ) {
+            window.location.href = '/login/';
+          }
         }
       }
     }
