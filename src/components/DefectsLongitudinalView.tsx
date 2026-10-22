@@ -270,24 +270,24 @@ export default function DefectsLongitudinalView({
 
       {/* Timeline Breakdown Table */}
       <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-4">
-        <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase mb-3 pb-2 border-b border-[#252D3D]">
+        <h2 className="text-sm sm:text-base font-extrabold tracking-wider text-gray-200 uppercase mb-3 pb-2 border-b border-[#252D3D]">
           Longitudinal Interval Telemetry Logs
         </h2>
 
         {timeline.length === 0 ? (
-          <div className="py-6 text-center text-gray-500 text-xs">
+          <div className="py-6 text-center text-gray-500 text-sm">
             No timestamped telemetry found for this filter.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-[10px] text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2 font-bold">
-                  <th className="pb-2">Date / Bucket</th>
-                  <th className="pb-2 text-right">Parts Produced</th>
-                  <th className="pb-2 text-right">Defective Parts</th>
-                  <th className="pb-2 text-right">Defect Rate</th>
-                  <th className="pb-2 pl-4">Top Defect Categories</th>
+                <tr className="text-xs text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2.5 font-bold">
+                  <th className="pb-2.5">Date / Bucket</th>
+                  <th className="pb-2.5 text-right">Parts Produced</th>
+                  <th className="pb-2.5 text-right">Defective Parts</th>
+                  <th className="pb-2.5 text-right">Defect Rate</th>
+                  <th className="pb-2.5 pl-4">Top Defect Categories</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#252D3D]/40 font-mono font-medium">
@@ -313,7 +313,7 @@ export default function DefectsLongitudinalView({
                       >
                         {point.defect_rate.toFixed(2)}%
                       </td>
-                      <td className="py-2.5 pl-4 font-sans text-gray-400 text-[11px]">
+                      <td className="py-2.5 pl-4 font-sans text-gray-300 text-xs">
                         {sortedCats.length === 0 ? (
                           <span className="text-gray-500">None</span>
                         ) : (
@@ -321,10 +321,10 @@ export default function DefectsLongitudinalView({
                             {sortedCats.slice(0, 3).map(([cat, cnt]) => (
                               <span
                                 key={cat}
-                                className="inline-flex items-center gap-1 bg-[#1E293B] px-2 py-0.5 rounded text-[10px] text-gray-200"
+                                className="inline-flex items-center gap-1.5 bg-[#1E293B] px-2.5 py-1 rounded text-xs text-gray-200"
                               >
                                 <span
-                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  className="w-2 h-2 rounded-full shrink-0"
                                   style={{
                                     backgroundColor: CATEGORY_COLORS[cat] || "#94A3B8",
                                   }}

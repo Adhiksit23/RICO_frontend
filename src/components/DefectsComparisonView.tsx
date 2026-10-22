@@ -339,27 +339,27 @@ export default function DefectsComparisonView({
 
       {/* Comparison Breakdown Table */}
       <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-4">
-        <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-gray-200 uppercase mb-3 pb-2 border-b border-[#252D3D]">
+        <h2 className="text-sm sm:text-base font-extrabold tracking-wider text-gray-200 uppercase mb-3 pb-2 border-b border-[#252D3D]">
           Defect Category Delta Breakdown
         </h2>
 
         {defectRows.length === 0 ? (
-          <div className="py-8 text-center text-gray-500 text-xs">
+          <div className="py-8 text-center text-gray-500 text-sm">
             Zero defects found across both periods. Quality is pristine.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-[10px] text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2 font-bold">
-                  <th className="pb-2">Defect Category</th>
-                  <th className="pb-2 text-right">Period 1 Count</th>
-                  <th className="pb-2 text-right">Period 1 Rate</th>
-                  <th className="pb-2 text-right">Period 2 Count</th>
-                  <th className="pb-2 text-right">Period 2 Rate</th>
-                  <th className="pb-2 text-right">Rate Delta (Δ)</th>
-                  <th className="pb-2 text-right">Relative Change</th>
-                  <th className="pb-2 text-center">Status</th>
+                <tr className="text-xs text-gray-400 uppercase tracking-widest border-b border-[#252D3D] pb-2.5 font-bold">
+                  <th className="pb-2.5">Defect Category</th>
+                  <th className="pb-2.5 text-right">Period 1 Count</th>
+                  <th className="pb-2.5 text-right">Period 1 Rate</th>
+                  <th className="pb-2.5 text-right">Period 2 Count</th>
+                  <th className="pb-2.5 text-right">Period 2 Rate</th>
+                  <th className="pb-2.5 text-right">Rate Delta (Δ)</th>
+                  <th className="pb-2.5 text-right">Relative Change</th>
+                  <th className="pb-2.5 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#252D3D]/40 font-mono font-medium">
@@ -406,7 +406,7 @@ export default function DefectsComparisonView({
                     </td>
                     <td className="py-2.5 text-center">
                       <span
-                        className={`inline-block px-2 py-0.5 text-[10px] uppercase font-bold rounded-full ${
+                        className={`inline-block px-2.5 py-1 text-xs uppercase font-bold rounded-full ${
                           row.status === "improved"
                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                             : row.status === "degraded"
