@@ -7,6 +7,7 @@ import CustomDropdown from "@/components/CustomDropdown";
 import DefectsComparisonView from "@/components/DefectsComparisonView";
 import DefectsLongitudinalView from "@/components/DefectsLongitudinalView";
 import { useDashboard } from "@/hooks/useDashboard";
+import { TARGET_DEFECTS, getDefectColor } from "@/types";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "compare" | "longitudinal">("overview");
@@ -58,8 +59,12 @@ export default function DashboardPage() {
     subtitle_defects: "0 defective parts",
   };
 
-  const defects = stats?.defects_breakdown || [];
-  const chartData = stats?.chart_data || [];
+  const defects = (stats?.defects_breakdown || []).filter(
+    (item) => item.name !== "Others" && (TARGET_DEFECTS as readonly string[]).includes(item.name)
+  );
+  const chartData = (stats?.chart_data || []).filter(
+    (item) => item.name !== "Others" && (TARGET_DEFECTS as readonly string[]).includes(item.name)
+  );
 
   return (
     <div className="space-y-4">
@@ -391,7 +396,8 @@ export default function DashboardPage() {
                       <td className="py-2">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: item.hex}}
+                            className="w-2 h-2 rounded-full shrink-0"
+                            style={{ backgroundColor: getDefectColor(item.name) }}
                           />
                           <span className="text-gray-200">{item.name}</span>
                         </div>
@@ -407,7 +413,10 @@ export default function DashboardPage() {
                         <div className="w-full bg-[#1E293B] rounded-full h-1.5 overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
-                            style={{ width: item.width, backgroundColor: item.hex }}
+                            style={{
+                              width: item.width || `${Math.min(100, Math.max(2, Math.round(parseFloat(item.percent) || 0)))}%`,
+                              backgroundColor: getDefectColor(item.name),
+                            }}
                           />
                         </div>
                       </td>
@@ -428,7 +437,10 @@ export default function DashboardPage() {
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{backgroundColor: item.hex}} />
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: getDefectColor(item.name) }}
+                      />
                       <span className="text-gray-200 font-bold text-xs">
                         {item.name}
                       </span>

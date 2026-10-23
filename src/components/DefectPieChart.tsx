@@ -7,7 +7,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import type { ChartSlice } from "@/types";
+import { getDefectColor, type ChartSlice } from "@/types";
 
 interface DefectPieChartProps {
   data?: ChartSlice[];
@@ -16,18 +16,6 @@ interface DefectPieChartProps {
   isLoading?: boolean;
 }
 
-const FALLBACK_COLORS = [
-  "#22D3EE",
-  "#A855F7",
-  "#3B82F6",
-  "#FACC15",
-  "#EC4899",
-  "#34D399",
-  "#EF4444",
-  "#FB923C",
-  "#818CF8",
-  "#94A3B8",
-];
 
 export default function DefectPieChart({
   data = [],
@@ -71,7 +59,7 @@ export default function DefectPieChart({
                 {displayData.map((entry, index) => (
                   <Cell
                     key={`slice-${index}-${entry.name}`}
-                    fill={entry.color || FALLBACK_COLORS[index % FALLBACK_COLORS.length]}
+                    fill={entry.color || getDefectColor(entry.name)}
                   />
                 ))}
               </Pie>
@@ -89,7 +77,7 @@ export default function DefectPieChart({
                           <p className="font-bold text-white flex items-center gap-1.5">
                             <span
                               className="w-2 h-2 rounded-full inline-block"
-                              style={{ backgroundColor: item.color }}
+                              style={{ backgroundColor: item.color || getDefectColor(item.name) }}
                             />
                             {item.name}
                           </p>

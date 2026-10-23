@@ -15,6 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { useLongitudinalDefects } from "@/hooks/useDashboard";
+import { TARGET_DEFECTS, getDefectColor } from "@/types";
 import type { LongitudinalParams } from "@/types";
 
 interface DefectsLongitudinalViewProps {
@@ -26,18 +27,6 @@ interface DefectsLongitudinalViewProps {
   endDate?: string;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  "Non-filling": "#22D3EE",
-  "Blowhole": "#3B82F6",
-  "Porosity": "#FACC15",
-  "Shrinkage": "#EC4899",
-  "Chip-off": "#34D399",
-  "Crack": "#EF4444",
-  "Bend / Dimension": "#FB923C",
-  "Surface Defect": "#818CF8",
-  "System / PLC Alert": "#A855F7",
-  "Others": "#94A3B8",
-};
 
 export default function DefectsLongitudinalView({
   client,
@@ -63,7 +52,9 @@ export default function DefectsLongitudinalView({
   const { data, isFetching } = useLongitudinalDefects(params);
 
   const timeline = data?.timeline || [];
-  const categories = data?.categories || [];
+  const categories = (data?.categories || []).filter(
+    (c) => (TARGET_DEFECTS as readonly string[]).includes(c)
+  );
 
   // Summary statistics across the timeline
   const rates = timeline.map((p) => p.defect_rate);
@@ -258,7 +249,7 @@ export default function DefectsLongitudinalView({
                     key={cat}
                     dataKey={cat}
                     stackId="defects"
-                    fill={CATEGORY_COLORS[cat] || "#94A3B8"}
+                    fill={getDefectColor(cat)}
                     radius={[0, 0, 0, 0]}
                   />
                 ))}
@@ -293,7 +284,7 @@ export default function DefectsLongitudinalView({
               <tbody className="divide-y divide-[#252D3D]/40 font-mono font-medium">
                 {timeline.map((point) => {
                   const sortedCats = Object.entries(point.defects || {})
-                    .filter(([, c]) => c > 0)
+                    .filter(([cat, c]) => c > 0 && cat !== "Others" && (TARGET_DEFECTS as readonly string[]).includes(cat))
                     .sort((a, b) => b[1] - a[1]);
 
                   return (
@@ -326,7 +317,7 @@ export default function DefectsLongitudinalView({
                                 <span
                                   className="w-2 h-2 rounded-full shrink-0"
                                   style={{
-                                    backgroundColor: CATEGORY_COLORS[cat] || "#94A3B8",
+                                    backgroundColor: getDefectColor(cat),
                                   }}
                                 />
                                 {cat}: <strong className="font-mono">{cnt}</strong>

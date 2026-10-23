@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import CustomDropdown from "@/components/CustomDropdown";
 import { usePeriodCompare } from "@/hooks/useDashboard";
-import type { PeriodCompareParams } from "@/types";
+import { TARGET_DEFECTS, type PeriodCompareParams } from "@/types";
 
 interface DefectsComparisonViewProps {
   client: string;
@@ -55,7 +55,9 @@ export default function DefectsComparisonView({
   const delta = data?.delta;
   const p1 = data?.period_1;
   const p2 = data?.period_2;
-  const defectRows = data?.defect_comparison || [];
+  const defectRows = (data?.defect_comparison || []).filter(
+    (row) => row.category !== "Others" && (TARGET_DEFECTS as readonly string[]).includes(row.category)
+  );
 
   // Chart data formatted for side-by-side grouped bars
   const chartData = defectRows.map((row) => ({

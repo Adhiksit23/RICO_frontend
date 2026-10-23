@@ -48,6 +48,34 @@ export interface InvitePayload {
 }
 
 // ─── Dashboard Types ─────────────────────────────────────────────────
+export const TARGET_DEFECTS = [
+  "Blow_Hole",
+  "Crack",
+  "Non_filling",
+  "Porosity",
+  "Shrinkage",
+  "Chipoff",
+] as const;
+
+export type TargetDefect = (typeof TARGET_DEFECTS)[number];
+
+export const DEFECT_COLORS: Record<string, string> = {
+  Blow_Hole: "#3B82F6",
+  Crack: "#EF4444",
+  Non_filling: "#22D3EE",
+  Porosity: "#FACC15",
+  Shrinkage: "#EC4899",
+  Chipoff: "#34D399",
+  // Aliases for backward compatibility
+  Blowhole: "#3B82F6",
+  "Non-filling": "#22D3EE",
+  "Chip-off": "#34D399",
+};
+
+export const getDefectColor = (defect: string): string => {
+  return DEFECT_COLORS[defect] || "#94A3B8";
+};
+
 export interface DashboardSummary {
   total_parts: number;
   defective_parts: number;
@@ -75,15 +103,15 @@ export interface DefectBreakdownRow {
   formatted_count: string;
   percent: string;
   rate: string;
-  color: string;
-  hex: string;
-  width: string;
+  color?: string;
+  hex?: string;
+  width?: string;
 }
 
 export interface ChartSlice {
   name: string;
   value: number;
-  color: string;
+  color?: string;
 }
 
 export interface DashboardStatsResponse {
