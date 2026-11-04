@@ -13,8 +13,8 @@ export interface ReportQueryParams {
 export const ReportService = {
   /**
    * Fetch tabular report preview data for the 2 sheets:
-   * 1. Prescribed Parameter - Bellurbi
-   * 2. Bellurbis (Predicted vs Actual defects)
+   * 1. Prescription history
+   * 2. Predicted vs Actual (Defects)
    */
   getPreview: (params?: ReportQueryParams): Promise<ReportPreviewResponse> =>
     axiosInstance

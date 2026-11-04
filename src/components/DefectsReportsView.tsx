@@ -44,13 +44,13 @@ const PARAMETERS = [
   "Total Cycle Time",
 ];
 
-// Fallback sample data for UI review
+// Fallback sample data for UI review — calibrated to real reference schema
 const SAMPLE_PRESCRIBED: PrescribedParameterRecord[] = [
   {
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
-    prescription_id: "RX-202611-S17-01",
-    date_provided: "2026-11-01 08:30",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
+    prescription_id: "75",
+    date_provided: "2026-11-04 08:30",
     parameters: {
       "Acc Position 1": { min: 245.0, mean: 250.0, max: 255.0 },
       "Biscuit Thickness": { min: 28.0, mean: 30.5, max: 33.0 },
@@ -78,10 +78,10 @@ const SAMPLE_PRESCRIBED: PrescribedParameterRecord[] = [
     },
   },
   {
-    machine_id: "UBE 850T-02",
-    die_id: "S18",
-    prescription_id: "RX-202610-S18-04",
-    date_provided: "2026-10-28 14:15",
+    machine_id: "UBE 850T-2",
+    die_id: "S17",
+    prescription_id: "74",
+    date_provided: "2026-11-03 14:15",
     parameters: {
       "Acc Position 1": { min: 240.0, mean: 248.0, max: 252.0 },
       "Biscuit Thickness": { min: 27.5, mean: 29.8, max: 32.0 },
@@ -110,17 +110,18 @@ const SAMPLE_PRESCRIBED: PrescribedParameterRecord[] = [
   },
 ];
 
+// Fallback sample rows using real RICO reference sample (customer_qr is blank, prescription_id is id_calibration_used: 75)
 const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
     source: "Bellurbis",
     today_date: "2026-11-04",
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
     manufactured_date: "2026-11-04",
-    manufactured_time: "09:42:18",
-    part_serial: "1104094222681",
-    customer_qr: "QR-SUZ-2026-0091",
-    prescription_id: "RX-202611-S17-01",
+    manufactured_time: "08:29:19",
+    part_serial: "1104135924619",
+    customer_qr: "",
+    prescription_id: "75",
     predicted: {
       ok: "OK",
       blow_hole: "0",
@@ -144,13 +145,13 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
     source: "Bellurbis",
     today_date: "2026-11-04",
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
     manufactured_date: "2026-11-04",
-    manufactured_time: "09:43:05",
-    part_serial: "1104094322682",
-    customer_qr: "QR-SUZ-2026-0092",
-    prescription_id: "RX-202611-S17-01",
+    manufactured_time: "08:28:09",
+    part_serial: "1104135824618",
+    customer_qr: "",
+    prescription_id: "75",
     predicted: {
       ok: "DEFECT",
       blow_hole: "1 (82%)",
@@ -174,13 +175,13 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
     source: "Bellurbis",
     today_date: "2026-11-04",
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
     manufactured_date: "2026-11-04",
-    manufactured_time: "09:44:00",
-    part_serial: "1104094422683",
-    customer_qr: "QR-SUZ-2026-0093",
-    prescription_id: "RX-202611-S17-01",
+    manufactured_time: "08:27:00",
+    part_serial: "1104135724617",
+    customer_qr: "",
+    prescription_id: "75",
     predicted: {
       ok: "OK",
       blow_hole: "0",
@@ -204,13 +205,13 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
     source: "Bellurbis",
     today_date: "2026-11-04",
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
     manufactured_date: "2026-11-04",
-    manufactured_time: "09:45:12",
-    part_serial: "1104094522684",
-    customer_qr: "QR-SUZ-2026-0094",
-    prescription_id: "RX-202611-S17-01",
+    manufactured_time: "08:25:50",
+    part_serial: "1104135524616",
+    customer_qr: "",
+    prescription_id: "75",
     predicted: {
       ok: "DEFECT",
       blow_hole: "0",
@@ -234,13 +235,13 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
     source: "Bellurbis",
     today_date: "2026-11-04",
-    machine_id: "UBE 850T-02",
-    die_id: "S17",
+    machine_id: "UBE 850T-2",
+    die_id: "S18",
     manufactured_date: "2026-11-04",
-    manufactured_time: "09:46:25",
-    part_serial: "1104094622685",
-    customer_qr: "QR-SUZ-2026-0095",
-    prescription_id: "RX-202611-S17-01",
+    manufactured_time: "08:24:44",
+    part_serial: "1104135424615",
+    customer_qr: "",
+    prescription_id: "75",
     predicted: {
       ok: "OK",
       blow_hole: "0",
@@ -389,8 +390,8 @@ export default function DefectsReportsView({
           </h2>
           <p className="text-[11px] text-gray-400">
             Preview and export multi-sheet Excel workbook with{" "}
-            <span className="text-emerald-300 font-semibold">Prescribed Parameter - Bellurbi</span> and{" "}
-            <span className="text-emerald-300 font-semibold">Bellurbis (Defects)</span>.
+            <span className="text-emerald-300 font-semibold">Prescription History</span> and{" "}
+            <span className="text-emerald-300 font-semibold">Predicted vs Actual (Defects)</span>.
           </p>
         </div>
 
@@ -470,7 +471,7 @@ export default function DefectsReportsView({
                 : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
             }`}
           >
-            <span>Sheet 1: Prescribed Parameter - Bellurbi</span>
+            <span>Sheet 1: Prescription History</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-cyan-400 border border-cyan-500/30">
               {filteredPrescribed.length}
             </span>
@@ -484,7 +485,7 @@ export default function DefectsReportsView({
                 : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
             }`}
           >
-            <span>Sheet 2: Bellurbis (Defects)</span>
+            <span>Sheet 2: Predicted vs Actual</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-purple-400 border border-purple-500/30">
               {filteredBellurbis.length}
             </span>
@@ -528,13 +529,13 @@ export default function DefectsReportsView({
         </div>
       </div>
 
-      {/* ─── SHEET 1 VIEW: PRESCRIBED PARAMETER - BELLURBI ─────────────── */}
+      {/* ─── SHEET 1 VIEW: PRESCRIPTION HISTORY ───────────────────────── */}
       {activeSheet === "prescribed" && (
         <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-[#252D3D] flex items-center justify-between bg-[#151C2C]/90">
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-                <span>Prescribed Parameter - Bellurbi</span>
+                <span>Prescription History</span>
                 <span className="text-[10px] text-gray-400 font-normal">
                   (Min, Mean & Max limits per parameter)
                 </span>
@@ -656,13 +657,13 @@ export default function DefectsReportsView({
         </div>
       )}
 
-      {/* ─── SHEET 2 VIEW: BELLURBIS (DEFECTS) ─────────────────────────── */}
+      {/* ─── SHEET 2 VIEW: PREDICTED VS ACTUAL (DEFECTS) ──────────────── */}
       {activeSheet === "bellurbis" && (
         <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-[#252D3D] flex items-center justify-between bg-[#151C2C]/90">
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
-                <span>Bellurbis Tab</span>
+                <span>Predicted vs Actual</span>
                 <span className="text-[10px] text-gray-400 font-normal">
                   (Predicted vs. Recorded Defects)
                 </span>
@@ -759,7 +760,9 @@ export default function DefectsReportsView({
                       <td className="px-2.5 py-2 text-gray-300 whitespace-nowrap">{row.manufactured_date}</td>
                       <td className="px-2.5 py-2 text-gray-400 whitespace-nowrap">{row.manufactured_time}</td>
                       <td className="px-2.5 py-2 text-gray-200 font-semibold whitespace-nowrap">{row.part_serial}</td>
-                      <td className="px-2.5 py-2 text-gray-300 whitespace-nowrap">{row.customer_qr}</td>
+                      <td className="px-2.5 py-2 text-gray-300 whitespace-nowrap">
+                        {row.customer_qr || <span className="text-gray-600 font-sans text-[11px]">—</span>}
+                      </td>
                       <td className="px-2.5 py-2 text-cyan-300 border-r border-[#252D3D] whitespace-nowrap">{row.prescription_id}</td>
 
                       {/* Predicted */}
