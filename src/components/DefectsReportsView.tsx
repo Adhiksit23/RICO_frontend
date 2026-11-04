@@ -409,7 +409,7 @@ export default function DefectsReportsView({
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <span>Sheet 1: Prescription History</span>
+              <span>Prescription History</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-cyan-400 border border-cyan-500/30">
                 {filteredPrescribed.length}
               </span>
@@ -423,7 +423,7 @@ export default function DefectsReportsView({
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <span>Sheet 2: Predicted vs Actual</span>
+              <span>Predicted vs Actual</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-purple-400 border border-purple-500/30">
                 {filteredBellurbis.length}
               </span>
