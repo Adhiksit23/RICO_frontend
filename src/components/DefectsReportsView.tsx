@@ -113,7 +113,7 @@ const SAMPLE_PRESCRIBED: PrescribedParameterRecord[] = [
 // Fallback sample rows using real RICO reference sample (customer_qr is blank, prescription_id is id_calibration_used: 75)
 const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
   {
-    source: "Bellurbis",
+    source: "Neuriot labs",
     today_date: "2026-11-04",
     machine_id: "UBE 850T-2",
     die_id: "S18",
@@ -143,7 +143,7 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
     },
   },
   {
-    source: "Bellurbis",
+    source: "Neuriot labs",
     today_date: "2026-11-04",
     machine_id: "UBE 850T-2",
     die_id: "S18",
@@ -173,7 +173,7 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
     },
   },
   {
-    source: "Bellurbis",
+    source: "Neuriot labs",
     today_date: "2026-11-04",
     machine_id: "UBE 850T-2",
     die_id: "S18",
@@ -203,7 +203,7 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
     },
   },
   {
-    source: "Bellurbis",
+    source: "Neuriot labs",
     today_date: "2026-11-04",
     machine_id: "UBE 850T-2",
     die_id: "S18",
@@ -233,7 +233,7 @@ const SAMPLE_BELLURBIS: BellurbisDefectRecord[] = [
     },
   },
   {
-    source: "Bellurbis",
+    source: "Neuriot labs",
     today_date: "2026-11-04",
     machine_id: "UBE 850T-2",
     die_id: "S18",
@@ -526,7 +526,7 @@ export default function DefectsReportsView({
               </p>
             </div>
             <span className="text-[11px] font-mono font-semibold text-cyan-400 bg-cyan-950/40 px-2.5 py-1 rounded-md border border-cyan-500/30 shrink-0">
-              Responsible: Bellurbis
+              Responsible: Neuriot labs
             </span>
           </div>
 
@@ -654,7 +654,7 @@ export default function DefectsReportsView({
               </p>
             </div>
             <span className="text-[11px] font-mono font-semibold text-purple-400 bg-purple-950/40 px-2.5 py-1 rounded-md border border-purple-500/30 shrink-0">
-              Responsible: Bellurbis
+              Responsible: Neuriot labs
             </span>
           </div>
 
