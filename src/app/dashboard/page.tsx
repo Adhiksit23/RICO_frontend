@@ -6,11 +6,14 @@ import SummaryCard from "@/components/SummaryCard";
 import CustomDropdown from "@/components/CustomDropdown";
 import DefectsComparisonView from "@/components/DefectsComparisonView";
 import DefectsLongitudinalView from "@/components/DefectsLongitudinalView";
+import DefectsReportsView from "@/components/DefectsReportsView";
 import { useDashboard } from "@/hooks/useDashboard";
 import { TARGET_DEFECTS, getDefectColor } from "@/types";
 
+export type DashboardTab = "overview" | "compare" | "longitudinal" | "reports";
+
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "compare" | "longitudinal">("overview");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
   const {
     selectedClient,
@@ -152,6 +155,20 @@ export default function DashboardPage() {
             Trend
           </span>
         </button>
+
+        <button
+          onClick={() => setActiveTab("reports")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === "reports"
+              ? "border-emerald-400 text-emerald-400 bg-emerald-950/20 rounded-t-md"
+              : "border-transparent text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          <span>Reports</span>
+          <span className="text-[10px] bg-emerald-900/50 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold">
+            Export
+          </span>
+        </button>
       </div>
 
       {/* Global Filter Bar (Client, Machine, Die, and Period for Overview/Longitudinal) */}
@@ -240,6 +257,18 @@ export default function DashboardPage() {
       {/* ─── TAB 3: LONGITUDINAL ANALYSIS VIEW ───────────────────────── */}
       {activeTab === "longitudinal" && (
         <DefectsLongitudinalView
+          client={selectedClient}
+          machine={selectedMachine}
+          die={selectedDie}
+          period={selectedPeriod}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      )}
+
+      {/* ─── TAB 4: REPORTS VIEW (EXCEL 2 TABS EXPORT) ────────────────── */}
+      {activeTab === "reports" && (
+        <DefectsReportsView
           client={selectedClient}
           machine={selectedMachine}
           die={selectedDie}

@@ -255,3 +255,55 @@ export const DIE_OPTIONS = ['S14', 'S16', 'S17', "S18"] as const;
 export const MACHINE_OPTIONS = ['UBE 850T-1', 'UBE 850T-2', 'UBE 850T-3'] as const;
 export type Die = typeof DIE_OPTIONS[number];
 export type Machine = typeof MACHINE_OPTIONS[number];
+
+// ─── Reports & Export Types ──────────────────────────────────────────
+export interface PrescribedParameterRecord {
+  machine_id: string;
+  die_id: string;
+  prescription_id: string;
+  date_provided: string;
+  parameters: Record<string, { min: number | string; mean: number | string; max: number | string }>;
+}
+
+export interface BellurbisDefectRecord {
+  source: string;
+  today_date: string;
+  machine_id: string;
+  die_id: string;
+  manufactured_date: string;
+  manufactured_time: string;
+  part_serial: string;
+  customer_qr: string;
+  prescription_id: string;
+  predicted: {
+    ok: number | string;
+    blow_hole: number | string;
+    non_filling: number | string;
+    porosity: number | string;
+    shrinkage: number | string;
+    chip_off: number | string;
+    crack: number | string;
+  };
+  recorded: {
+    ok: number | string;
+    blow_hole: number | string;
+    non_filling: number | string;
+    porosity: number | string;
+    shrinkage: number | string;
+    chip_off: number | string;
+    crack: number | string;
+    other: number | string;
+  };
+}
+
+export interface ReportPreviewResponse {
+  prescribed_parameters: PrescribedParameterRecord[];
+  bellurbis_records: BellurbisDefectRecord[];
+  summary: {
+    total_prescriptions: number;
+    total_parts: number;
+    period: string;
+    die: string;
+    machine: string;
+  };
+}
