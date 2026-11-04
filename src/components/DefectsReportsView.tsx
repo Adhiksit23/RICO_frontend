@@ -365,70 +365,7 @@ export default function DefectsReportsView({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Top Banner & Control Bar */}
-      <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 uppercase">
-              Excel Report Export (2 Tabs)
-            </span>
-            {(isLoading || isFetching) && (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 animate-pulse">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                SYNCING...
-              </span>
-            )}
-            <span className="text-gray-400 text-xs">•</span>
-            <span className="text-gray-300 text-xs font-semibold">
-              Die: <span className="text-cyan-400">{die}</span> | Machine:{" "}
-              <span className="text-cyan-400">{machine}</span>
-            </span>
-          </div>
-          <h2 className="text-sm sm:text-base font-extrabold text-white tracking-wide uppercase">
-            Quality & Prescription Report Viewer
-          </h2>
-          <p className="text-[11px] text-gray-400">
-            Preview and export multi-sheet Excel workbook with{" "}
-            <span className="text-emerald-300 font-semibold">Prescription History</span> and{" "}
-            <span className="text-emerald-300 font-semibold">Predicted vs Actual (Defects)</span>.
-          </p>
-        </div>
-
-        {/* Export Action Button */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-900/30 border border-emerald-400/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
-          >
-            {isExporting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                <span>Generating XLSX...</span>
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-4 h-4 text-emerald-100"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <span>Export / Download Excel</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
+    <div className="space-y-3.5">
       {/* Export notification toast */}
       {exportNotification && (
         <div
@@ -459,73 +396,117 @@ export default function DefectsReportsView({
         </div>
       )}
 
-      {/* Sheet Switcher Tabs + Search Filter */}
-      <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Tab 1: Prescribed vs Tab 2: Bellurbis */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#0E131F] rounded-lg border border-[#252D3D] overflow-x-auto">
-          <button
-            onClick={() => setActiveSheet("prescribed")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-              activeSheet === "prescribed"
-                ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-            }`}
-          >
-            <span>Sheet 1: Prescription History</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-cyan-400 border border-cyan-500/30">
-              {filteredPrescribed.length}
-            </span>
-          </button>
+      {/* Unified Single Control Toolbar: Sheet Switcher (Left) + Search & Export Excel (Right) */}
+      <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-2.5 sm:p-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        {/* Left: Sheet Switcher Tabs + Live Sync Badge */}
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <div className="flex items-center gap-1.5 p-1 bg-[#0E131F] rounded-lg border border-[#252D3D] shrink-0">
+            <button
+              onClick={() => setActiveSheet("prescribed")}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                activeSheet === "prescribed"
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              <span>Sheet 1: Prescription History</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-cyan-400 border border-cyan-500/30">
+                {filteredPrescribed.length}
+              </span>
+            </button>
 
-          <button
-            onClick={() => setActiveSheet("bellurbis")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-              activeSheet === "bellurbis"
-                ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
-                : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-            }`}
-          >
-            <span>Sheet 2: Predicted vs Actual</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-purple-400 border border-purple-500/30">
-              {filteredBellurbis.length}
+            <button
+              onClick={() => setActiveSheet("bellurbis")}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                activeSheet === "bellurbis"
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              <span>Sheet 2: Predicted vs Actual</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-purple-400 border border-purple-500/30">
+                {filteredBellurbis.length}
+              </span>
+            </button>
+          </div>
+
+          {(isLoading || isFetching) && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 animate-pulse shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              SYNCING...
             </span>
-          </button>
+          )}
         </div>
 
-        {/* Quick Search in Preview */}
-        <div className="relative w-full md:w-64">
-          <input
-            type="text"
-            placeholder={
-              activeSheet === "prescribed"
-                ? "Filter prescription ID or die..."
-                : "Search part serial or QR..."
-            }
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#0E131F] border border-[#252D3D] text-gray-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-cyan-500/60 placeholder-gray-500 font-mono"
-          />
-          <svg
-            className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-2.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        {/* Right: Search Filter + Export / Download Excel Button */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+          {/* Quick Search */}
+          <div className="relative w-full sm:w-56 md:w-64">
+            <input
+              type="text"
+              placeholder={
+                activeSheet === "prescribed"
+                  ? "Filter prescription ID or die..."
+                  : "Search part serial or QR..."
+              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#0E131F] border border-[#252D3D] text-gray-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-cyan-500/60 placeholder-gray-500 font-mono"
             />
-          </svg>
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-200 text-xs"
+            <svg
+              className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-2.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              ✕
-            </button>
-          )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-200 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Export Action Button */}
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-md shadow-emerald-900/30 border border-emerald-400/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider shrink-0 whitespace-nowrap"
+            title="Download multi-sheet Excel (.xlsx)"
+          >
+            {isExporting ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <span className="text-[11px]">Generating...</span>
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-3.5 h-3.5 text-emerald-100"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span className="text-[11px]">Export / Download Excel</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
