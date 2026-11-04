@@ -265,7 +265,7 @@ export interface PrescribedParameterRecord {
   parameters: Record<string, { min: number | string; mean: number | string; max: number | string }>;
 }
 
-export interface BellurbisDefectRecord {
+export interface PartDefectComparisonRecord {
   source: string;
   today_date: string;
   machine_id: string;
@@ -296,9 +296,41 @@ export interface BellurbisDefectRecord {
   };
 }
 
+export interface DefectAccuracyItem {
+  defect_type: string;
+  predicted_count: number;
+  gains: number;
+  losses: number;
+  accuracy_pct: number;
+}
+
+export interface AccuracyPartAuditRow {
+  part_serial: string;
+  customer_qr: string;
+  prescription_id: string;
+  machine_id: string;
+  die_id: string;
+  manufactured_date: string;
+  manufactured_time: string;
+  defect_type: string;
+  predicted_label: string;
+  recorded_label: string;
+  outcome: "GAIN" | "LOSS";
+}
+
+export interface PredictionAccuracyReport {
+  sample_size: number;
+  total_gains: number;
+  total_losses: number;
+  overall_accuracy_pct: number;
+  breakdown: DefectAccuracyItem[];
+  audit_rows: AccuracyPartAuditRow[];
+}
+
 export interface ReportPreviewResponse {
   prescribed_parameters: PrescribedParameterRecord[];
-  bellurbis_records: BellurbisDefectRecord[];
+  part_defect_records: PartDefectComparisonRecord[];
+  prediction_accuracy?: PredictionAccuracyReport;
   summary: {
     total_prescriptions: number;
     total_parts: number;
