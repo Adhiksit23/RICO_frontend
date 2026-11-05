@@ -7,6 +7,7 @@ import { MonitorService } from "@/services";
 import CustomDropdown from "@/components/CustomDropdown";
 import IotSyncPanel from "@/components/IotSyncPanel";
 import { formatIstDateTime } from "@/lib/datetime";
+import { useMonitorAlertStore } from "@/store/monitorAlertStore";
 import type { RangeMismatchAlert } from "@/types";
 
 
@@ -78,6 +79,7 @@ export default function MonitorPage() {
   const [monitorData, setMonitorData] = useState<MonitorData | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const setAlert = useMonitorAlertStore((s) => s.setAlert);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,6 +93,9 @@ export default function MonitorPage() {
 
         setPredictionData(predictRes);
         setMonitorData(monitorRes as unknown as MonitorData);
+        if (monitorRes[2]) {
+          setAlert(selectedDie, monitorRes[2]);
+        }
       } catch (err: unknown) {
         console.error("Error fetching dashboard data:", err);
 
@@ -137,7 +142,7 @@ export default function MonitorPage() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [selectedDie]);
+  }, [selectedDie, setAlert]);
 
   const getPredictionStatus = (value: number) => {
     if (value < 40) return { status: "LOW", color: "#22C55E" };

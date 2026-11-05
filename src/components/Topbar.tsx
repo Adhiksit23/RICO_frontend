@@ -1,6 +1,7 @@
 "use client";
 
 import UserMenu from "@/components/UserMenu";
+import MonitorAlertButton from "@/components/MonitorAlertButton";
 import { MenuIcon } from "@/components/icons";
 
 interface TopbarProps {
@@ -40,8 +41,9 @@ export default function Topbar({ onMenuToggle }: TopbarProps) {
         </div>
       </div>
 
-      {/* User Dropdown */}
+      {/* Alert + User Dropdown */}
       <div className="flex items-center gap-3">
+        <MonitorAlertButton />
         <UserMenu />
       </div>
     </header>
