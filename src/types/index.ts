@@ -217,7 +217,34 @@ export interface CalibrationRange {
   upper_tolerance: number;
 }
 
-export type MonitorResponse = [ParameterReading, Record<string, CalibrationRange>];
+export interface RangeMismatchValues {
+  baseline: number | null;
+  lower: number | null;
+  upper: number | null;
+}
+
+export interface RangeMismatchItem {
+  parameter: string;
+  monitor: RangeMismatchValues;
+  calibration: RangeMismatchValues;
+  diff: RangeMismatchValues;
+  percent_diff: RangeMismatchValues;
+  baseline_mismatch: boolean;
+}
+
+export interface RangeMismatchAlert {
+  has_mismatch: boolean;
+  count: number;
+  items: RangeMismatchItem[];
+  missing_in_calibration: string[];
+  missing_in_monitor: string[];
+}
+
+export type MonitorResponse = [
+  ParameterReading,
+  Record<string, CalibrationRange>,
+  RangeMismatchAlert,
+];
 
 // ─── Calibration Types ───────────────────────────────────────────────
 export interface RangeData {

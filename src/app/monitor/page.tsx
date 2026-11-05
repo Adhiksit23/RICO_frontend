@@ -7,6 +7,7 @@ import { MonitorService } from "@/services";
 import CustomDropdown from "@/components/CustomDropdown";
 import IotSyncPanel from "@/components/IotSyncPanel";
 import { formatIstDateTime } from "@/lib/datetime";
+import type { RangeMismatchAlert } from "@/types";
 
 
 
@@ -27,12 +28,13 @@ type MonitorValues = {
 };
 
 interface CalibrationRange {
+  baseline?: number;
   lower_tolerance: number;
   upper_tolerance: number;
 }
 
 type CalibrationValues = Record<string, CalibrationRange>;
-type MonitorData = [MonitorValues, CalibrationValues];
+type MonitorData = [MonitorValues, CalibrationValues, RangeMismatchAlert];
 
 // NOTE: Each label must be unique (used as React key) and each key should appear only once.
 const parameterMap = [
