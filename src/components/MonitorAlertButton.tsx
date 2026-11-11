@@ -11,7 +11,12 @@ export default function MonitorAlertButton() {
   const alert = useMonitorAlertStore((s) => s.alert);
   const die = useMonitorAlertStore((s) => s.die);
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -23,7 +28,7 @@ export default function MonitorAlertButton() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  if (!alert) return null;
+  if (!mounted || !alert) return null;
 
   const hasMismatch = alert.has_mismatch;
   const badge = alert.count > 99 ? '99+' : alert.count > 0 ? alert.count : '!';
