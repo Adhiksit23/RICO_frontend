@@ -8,6 +8,7 @@ export interface ReportQueryParams {
   period?: string;
   start_date?: string;
   end_date?: string;
+  limit?: number;
 }
 
 export const ReportService = {
