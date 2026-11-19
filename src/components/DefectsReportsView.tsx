@@ -356,6 +356,7 @@ export default function DefectsReportsView({
       return (
         row.part_serial.toLowerCase().includes(q) ||
         row.customer_qr.toLowerCase().includes(q) ||
+        (row.status && row.status.toLowerCase().includes(q)) ||
         row.prescription_id.toLowerCase().includes(q) ||
         row.die_id.toLowerCase().includes(q)
       );
@@ -372,6 +373,7 @@ export default function DefectsReportsView({
       return (
         row.part_serial.toLowerCase().includes(q) ||
         row.customer_qr.toLowerCase().includes(q) ||
+        (row.status && row.status.toLowerCase().includes(q)) ||
         row.prescription_id.toLowerCase().includes(q) ||
         row.defect_type.toLowerCase().includes(q) ||
         row.outcome.toLowerCase().includes(q)
