@@ -301,6 +301,7 @@ export interface PartDefectComparisonRecord {
   manufactured_time: string;
   part_serial: string;
   customer_qr: string;
+  status?: string;               // Traceability status from rico.part.status
   prescription_id: string;
   predicted: {
     ok: number | string;
@@ -339,6 +340,7 @@ export interface DefectAccuracyItem {
 export interface AccuracyPartAuditRow {
   part_serial: string;
   customer_qr: string;
+  status?: string;               // Traceability status from rico.part.status
   prescription_id: string;
   machine_id: string;
   die_id: string;
