@@ -124,6 +124,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:29:19",
     part_serial: "1104135924619",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
     recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
@@ -138,6 +139,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:28:09",
     part_serial: "1104135824618",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     // prob 82% (> 60%) AND oor 5 (>= 4) → DEFECT
     predicted: { ok: "DEFECT", blow_hole: "1 (82%)", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
@@ -153,6 +155,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:27:00",
     part_serial: "1104135724617",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
     recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
@@ -167,6 +170,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:25:50",
     part_serial: "1104135524616",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     // prob 74% (> 60%) AND oor 6 (>= 4) → DEFECT
     predicted: { ok: "DEFECT", blow_hole: "0", non_filling: "1 (74%)", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
@@ -182,6 +186,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:24:44",
     part_serial: "1104135424615",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
     recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
@@ -196,6 +201,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     manufactured_time: "08:22:30",
     part_serial: "1104135324614",
     customer_qr: "",
+    status: "Received",
     prescription_id: "75",
     // prob 68% (> 60%) BUT oor 2 (< 4) → below 4 threshold → NOT flagged DEFECT
     predicted: { ok: "OK",     blow_hole: "0", non_filling: "0", porosity: "1 (68%)", shrinkage: "0", chip_off: "0", crack: "0" },
@@ -724,7 +730,7 @@ export default function DefectsReportsView({
               <thead className="bg-[#0E131F] sticky top-0 z-20">
                 <tr className="border-b border-[#252D3D]">
                   <th
-                    colSpan={9}
+                    colSpan={10}
                     className="px-3 py-2 text-center text-[11px] font-extrabold uppercase tracking-wider text-cyan-400 bg-[#121A29] border-r border-[#252D3D]"
                   >
                     Identification
@@ -760,6 +766,7 @@ export default function DefectsReportsView({
                   <th className="px-2.5 py-1.5 bg-[#121A29]">Mfg Time</th>
                   <th className="px-2.5 py-1.5 bg-[#121A29]">Part Serial</th>
                   <th className="px-2.5 py-1.5 bg-[#121A29]">Customer QR</th>
+                  <th className="px-2.5 py-1.5 text-center bg-[#121A29]">Status</th>
                   <th className="px-2.5 py-1.5 bg-[#121A29] border-r border-[#252D3D]">
                     Prescription ID
                   </th>
@@ -794,7 +801,7 @@ export default function DefectsReportsView({
               <tbody className="divide-y divide-[#252D3D]/60 font-mono text-[11px]">
                 {filteredDefectComparison.length === 0 ? (
                   <tr>
-                    <td colSpan={27} className="py-12 text-center text-gray-500 font-sans">
+                    <td colSpan={28} className="py-12 text-center text-gray-500 font-sans">
                       No defect comparison records found for this filter.
                     </td>
                   </tr>
@@ -814,6 +821,26 @@ export default function DefectsReportsView({
                       <td className="px-2.5 py-2 text-gray-200 font-semibold whitespace-nowrap">{row.part_serial}</td>
                       <td className="px-2.5 py-2 text-gray-300 whitespace-nowrap">
                         {row.customer_qr || <span className="text-gray-600 font-sans text-[11px]">—</span>}
+                      </td>
+                      <td className="px-2.5 py-2 text-center whitespace-nowrap">
+                        {row.status ? (
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                              row.status.toLowerCase().includes("receiv") ||
+                              row.status.toLowerCase().includes("ok") ||
+                              row.status.toLowerCase().includes("complete")
+                                ? "bg-emerald-950/60 text-emerald-400 border border-emerald-700/30"
+                                : row.status.toLowerCase().includes("fail") ||
+                                  row.status.toLowerCase().includes("miss")
+                                ? "bg-red-950/60 text-red-400 border border-red-700/30"
+                                : "bg-cyan-950/60 text-cyan-400 border border-cyan-700/30"
+                            }`}
+                          >
+                            {row.status}
+                          </span>
+                        ) : (
+                          <span className="text-gray-600 font-sans text-[11px]">—</span>
+                        )}
                       </td>
                       <td className="px-2.5 py-2 text-cyan-300 border-r border-[#252D3D] whitespace-nowrap">{row.prescription_id}</td>
 
@@ -1267,6 +1294,7 @@ export default function DefectsReportsView({
                   <tr className="bg-[#0E131F] text-[10px] text-gray-400 uppercase font-semibold border-b border-[#252D3D]">
                     <th className="px-3 py-2">Part Serial</th>
                     <th className="px-3 py-2">Customer QR</th>
+                    <th className="px-3 py-2 text-center">Status</th>
                     <th className="px-3 py-2">Prescription ID</th>
                     <th className="px-3 py-2">Machine ID</th>
                     <th className="px-2 py-2">Die ID</th>
@@ -1280,7 +1308,7 @@ export default function DefectsReportsView({
                 <tbody className="divide-y divide-[#252D3D]/50 font-mono text-[11px]">
                   {filteredAuditRows.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-12 text-center text-gray-500 font-sans">
+                      <td colSpan={11} className="py-12 text-center text-gray-500 font-sans">
                         No predicted defect instances matching the current filter.
                       </td>
                     </tr>
@@ -1295,6 +1323,13 @@ export default function DefectsReportsView({
                         </td>
                         <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
                           {row.customer_qr || <span className="text-gray-600 font-sans">—</span>}
+                        </td>
+                        <td className="px-3 py-2 text-center whitespace-nowrap">
+                          {row.status ? (
+                            <span className="text-cyan-400 font-sans text-[11px]">{row.status}</span>
+                          ) : (
+                            <span className="text-gray-600 font-sans">—</span>
+                          )}
                         </td>
                         <td className="px-3 py-2 text-cyan-300 whitespace-nowrap">
                           {row.prescription_id}
