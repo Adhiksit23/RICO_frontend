@@ -321,6 +321,11 @@ export interface PartDefectComparisonRecord {
     crack: number | string;
     other: number | string;
   };
+  // OOR monitoring fields (from rico.part_quality)
+  monitor_verdict: string;       // "PASS" | "FAIL" | ""
+  params_out_of_range: number;   // how many parameters are outside calibrated range
+  params_compared: number;       // how many parameters were compared
+  params_total: number;          // total parameters in the shot
 }
 
 export interface DefectAccuracyItem {
