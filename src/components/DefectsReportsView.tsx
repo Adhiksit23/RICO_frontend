@@ -197,7 +197,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     part_serial: "1104135324614",
     customer_qr: "",
     prescription_id: "75",
-    // prob 68% (> 60%) BUT oor 2 (< 4) → gate CLOSED → NOT flagged DEFECT
+    // prob 68% (> 60%) BUT oor 2 (< 4) → below 4 threshold → NOT flagged DEFECT
     predicted: { ok: "OK",     blow_hole: "0", non_filling: "0", porosity: "1 (68%)", shrinkage: "0", chip_off: "0", crack: "0" },
     recorded:  { ok: "OK",     blow_hole: "0", non_filling: "0", porosity: "0",        shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "PASS", params_out_of_range: 2, params_compared: 23, params_total: 23,
@@ -708,6 +708,9 @@ export default function DefectsReportsView({
               </h3>
               <p className="text-[11px] text-gray-400 mt-0.5">
                 Part-level comparison between AI model defect predictions and shop-floor recorded defects.
+                <span className="ml-2 text-cyan-300 font-medium">
+                  • Defect Rule: Predicted DEFECT only if Defect Prob &gt; 60% AND Out of Range Params &ge; 4.
+                </span>
               </p>
             </div>
             <span className="text-[11px] font-mono font-semibold text-purple-400 bg-purple-950/40 px-2.5 py-1 rounded-md border border-purple-500/30 shrink-0">
@@ -764,7 +767,7 @@ export default function DefectsReportsView({
                   {/* Parameter Health (OOR) */}
                   <th className="px-2.5 py-1.5 text-center bg-[#1A1500] text-orange-400 whitespace-nowrap">Monitor</th>
                   <th className="px-2.5 py-1.5 text-center bg-[#1A1500] whitespace-nowrap">OOR / Compared</th>
-                  <th className="px-2.5 py-1.5 text-center bg-[#1A1500] border-r border-[#252D3D] whitespace-nowrap">Gate (≥4)</th>
+                  <th className="px-2.5 py-1.5 text-center bg-[#1A1500] border-r border-[#252D3D] whitespace-nowrap">OOR Status (≥4 Rule)</th>
 
                   {/* Predicted */}
                   <th className="px-2 py-1.5 text-center bg-[#1E1730] text-emerald-400">OK</th>
@@ -833,15 +836,17 @@ export default function DefectsReportsView({
                           {row.params_out_of_range ?? "—"}{row.params_compared ? `/${row.params_compared}` : ""}
                         </span>
                       </td>
-                      <td className="px-2 py-2 text-center border-r border-[#252D3D]">
+                      <td className="px-2 py-2 text-center border-r border-[#252D3D] whitespace-nowrap">
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             (row.params_out_of_range ?? 0) >= 4
                               ? "bg-orange-950/80 text-orange-400 border border-orange-500/30"
-                              : "bg-emerald-950/60 text-emerald-500 border border-emerald-700/30"
+                              : "bg-emerald-950/60 text-emerald-400 border border-emerald-700/30"
                           }`}
                         >
-                          {(row.params_out_of_range ?? 0) >= 4 ? "OPEN" : "CLOSED"}
+                          {(row.params_out_of_range ?? 0) >= 4
+                            ? `≥4 OOR (${row.params_out_of_range} out of range)`
+                            : `<4 OOR (${row.params_out_of_range} out of range)`}
                         </span>
                       </td>
 
