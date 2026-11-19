@@ -63,6 +63,9 @@ const parameterMap = [
   { label: "Shot Fwd Time",                 key: "shot_fwd_time",                 unit: "s"    },
 ];
 
+// REJECT when more than this many monitored parameters are out of range.
+const MONITOR_FAIL_THRESHOLD = 4;
+
 export default function MonitorPage() {
   const [selectedDie, setSelectedDie] = useState("S14");
   const dies = ["S14", "S16", "S17", "S18"];
@@ -180,6 +183,8 @@ export default function MonitorPage() {
 
   const totalParamsCount = parameters.length;
   const okCount = parameters.filter((p) => p.status === "OK").length;
+  const outOfRangeCount = totalParamsCount - okCount;
+  const isRejected = isDataLoaded && outOfRangeCount > MONITOR_FAIL_THRESHOLD;
 
   return (
     <div className="space-y-6">
@@ -246,8 +251,8 @@ export default function MonitorPage() {
           </div>
           <div>
             <div className="text-gray-500 text-[10px] uppercase tracking-wider font-bold">Verdict</div>
-            <div className={`font-bold text-xs sm:text-sm mt-0.5 ${!isDataLoaded ? "text-gray-400" : (totalParamsCount - okCount > 3) ? "text-red-400" : "text-green-400"}`}>
-              {isDataLoaded ? (totalParamsCount - okCount > 4) ? "REJECT" : "PASS" : "..."} 
+            <div className={`font-bold text-xs sm:text-sm mt-0.5 ${!isDataLoaded ? "text-gray-400" : isRejected ? "text-red-400" : "text-green-400"}`}>
+              {isDataLoaded ? (isRejected ? "REJECT" : "PASS") : "..."} 
             </div>
           </div>
           <div>
