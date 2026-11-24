@@ -327,6 +327,7 @@ export interface PartDefectComparisonRecord {
   params_out_of_range: number;   // how many parameters are outside calibrated range
   params_compared: number;       // how many parameters were compared
   params_total: number;          // total parameters in the shot
+  parameters?: Record<string, number | null | string>;
 }
 
 export interface DefectAccuracyItem {
