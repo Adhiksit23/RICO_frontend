@@ -362,10 +362,52 @@ export interface PredictionAccuracyReport {
   audit_rows: AccuracyPartAuditRow[];
 }
 
+export interface HourlyMismatchRecord {
+  date: string;
+  hour_window: string;
+  machine_id: string;
+  die_id: string;
+  total_shots: number;
+  mismatched_shots: number;
+  mismatch_rate_pct: number;
+  recorded_defects: number;
+  predicted_defects: number;
+  top_deviations?: string;
+}
+
+export interface PartDossierResult {
+  found: boolean;
+  message?: string;
+  part_info?: {
+    id_part: string;
+    customer_qr: string;
+    die_id: string;
+    machine_id: string;
+    manufactured_date: string;
+    manufactured_time: string;
+    prescription_id: string;
+    status: string;
+    shot_number?: number;
+  };
+  prediction?: {
+    verdict: "OK" | "DEFECT";
+    monitor_verdict: string;
+    params_out_of_range: number;
+    params_compared: number;
+    defects: Record<string, string>;
+  };
+  plant_inspection?: {
+    verdict: "OK" | "DEFECT";
+    defects: string[];
+  };
+  parameters?: Record<string, number | null>;
+}
+
 export interface ReportPreviewResponse {
   prescribed_parameters: PrescribedParameterRecord[];
   part_defect_records: PartDefectComparisonRecord[];
   prediction_accuracy?: PredictionAccuracyReport;
+  hourly_mismatches?: HourlyMismatchRecord[];
   summary: {
     total_prescriptions: number;
     total_parts: number;

@@ -8,6 +8,8 @@ import type {
   PartDefectComparisonRecord,
   PredictionAccuracyReport,
   AccuracyPartAuditRow,
+  HourlyMismatchRecord,
+  PartDossierResult,
 } from "@/types";
 
 interface DefectsReportsViewProps {
@@ -218,12 +220,20 @@ export default function DefectsReportsView({
   startDate,
   endDate,
 }: DefectsReportsViewProps) {
-  // Selected Sheet Tab: 3 Reports matching requested structure
-  const [activeSheet, setActiveSheet] = useState<"prescribed" | "comparison" | "accuracy">("prescribed");
+  // Selected Sheet Tab: 4 Reports matching requested structure
+  const [activeSheet, setActiveSheet] = useState<"prescribed" | "comparison" | "accuracy" | "hourly">("prescribed");
   const [searchTerm, setSearchTerm] = useState("");
+  const [recordedFilter, setRecordedFilter] = useState<"ALL" | "OK" | "DEFECT">("ALL");
+  const [predictedFilter, setPredictedFilter] = useState<"ALL" | "OK" | "DEFECT">("ALL");
   const [outcomeFilter, setOutcomeFilter] = useState<"ALL" | "GAIN" | "LOSS">("ALL");
   const [isExporting, setIsExporting] = useState(false);
   const [exportNotification, setExportNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Global Part Search Modal State
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [dossierPart, setDossierPart] = useState<PartDossierResult | null>(null);
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
 
   // Live Query from backend API
   const { data: reportData, isLoading, isFetching } = useQuery({
@@ -248,6 +258,11 @@ export default function DefectsReportsView({
   const liveDefectComparison = reportData?.part_defect_records?.length
     ? (reportData.part_defect_records as unknown as PartDefectComparisonRecord[])
     : SAMPLE_DEFECT_COMPARISON;
+
+  const liveHourly: HourlyMismatchRecord[] = useMemo(
+    () => reportData?.hourly_mismatches || [],
+    [reportData?.hourly_mismatches]
+  );
 
   // Live or computed Prediction Accuracy
   const liveAccuracy: PredictionAccuracyReport = useMemo(() => {
@@ -351,6 +366,8 @@ export default function DefectsReportsView({
     return liveDefectComparison.filter((row) => {
       if (die !== "All" && row.die_id !== die) return false;
       if (machine !== "All" && row.machine_id !== machine) return false;
+      if (recordedFilter !== "ALL" && row.recorded.ok !== recordedFilter) return false;
+      if (predictedFilter !== "ALL" && row.predicted.ok !== predictedFilter) return false;
       if (!searchTerm) return true;
       const q = searchTerm.toLowerCase();
       return (
@@ -361,7 +378,40 @@ export default function DefectsReportsView({
         row.die_id.toLowerCase().includes(q)
       );
     });
-  }, [liveDefectComparison, die, machine, searchTerm]);
+  }, [liveDefectComparison, die, machine, recordedFilter, predictedFilter, searchTerm]);
+
+  const filteredHourly = useMemo(() => {
+    return liveHourly.filter((row) => {
+      if (die !== "All" && row.die_id !== die) return false;
+      if (machine !== "All" && row.machine_id !== machine) return false;
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      return (
+        row.date.toLowerCase().includes(q) ||
+        row.hour_window.toLowerCase().includes(q) ||
+        row.die_id.toLowerCase().includes(q) ||
+        row.machine_id.toLowerCase().includes(q)
+      );
+    });
+  }, [liveHourly, die, machine, searchTerm]);
+
+  const handleGlobalLookup = async () => {
+    const q = searchTerm.trim();
+    if (!q) return;
+    setIsLookingUp(true);
+    setLookupError(null);
+    try {
+      const res = await ReportService.lookupPart(q);
+      setDossierPart(res);
+      setIsDossierOpen(true);
+    } catch (err: unknown) {
+      const errMsg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setLookupError(errMsg || `Part '${q}' not found in database.`);
+      setTimeout(() => setLookupError(null), 4500);
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
 
   const filteredAuditRows = useMemo(() => {
     return liveAccuracy.audit_rows.filter((row) => {
@@ -491,6 +541,20 @@ export default function DefectsReportsView({
                 {liveAccuracy.overall_accuracy_pct}%
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveSheet("hourly")}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                activeSheet === "hourly"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              <span>Hourly Mismatches</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-amber-400 border border-amber-500/30">
+                {filteredHourly.length}
+              </span>
+            </button>
           </div>
 
           {(isLoading || isFetching) && (
@@ -501,44 +565,69 @@ export default function DefectsReportsView({
           )}
         </div>
 
-        {/* Right: Search Filter + Export / Download Excel Button */}
+        {/* Right: Search Filter + Global DB Lookup + Export / Download Excel Button */}
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
-          {/* Quick Search */}
-          <div className="relative w-full sm:w-56 md:w-64">
-            <input
-              type="text"
-              placeholder={
-                activeSheet === "prescribed"
-                  ? "Filter prescription ID or die..."
-                  : activeSheet === "comparison"
-                  ? "Search part serial or QR..."
-                  : "Search serial, defect, outcome..."
-              }
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0E131F] border border-[#252D3D] text-gray-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-cyan-500/60 placeholder-gray-500 font-mono"
-            />
-            <svg
-              className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-2.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          {/* Quick Search + Global DB Search */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <div className="relative w-full sm:w-56 md:w-64">
+              <input
+                type="text"
+                placeholder={
+                  activeSheet === "prescribed"
+                    ? "Filter prescription ID or die..."
+                    : activeSheet === "comparison"
+                    ? "Search serial or QR (Press Enter to DB Lookup)..."
+                    : activeSheet === "hourly"
+                    ? "Filter date or hour..."
+                    : "Search serial, defect, outcome..."
+                }
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchTerm.trim()) {
+                    handleGlobalLookup();
+                  }
+                }}
+                className="w-full bg-[#0E131F] border border-[#252D3D] text-gray-200 text-xs rounded-lg pl-8 pr-3 py-1.5 focus:outline-none focus:border-cyan-500/60 placeholder-gray-500 font-mono"
               />
-            </svg>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-200 text-xs cursor-pointer"
+              <svg
+                className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-2.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                ✕
-              </button>
-            )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-200 text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={handleGlobalLookup}
+              disabled={isLookingUp || !searchTerm.trim()}
+              className="px-2.5 py-1.5 bg-[#172238] hover:bg-[#1E2E4C] border border-cyan-500/40 text-cyan-300 text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 whitespace-nowrap flex items-center gap-1.5 shadow-sm"
+              title="Search entire database by Part Serial or QR directly without downloading Excel"
+            >
+              {isLookingUp ? (
+                <div className="w-3 h-3 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+              ) : (
+                <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">Lookup DB</span>
+            </button>
           </div>
 
           {/* Export Action Button */}
@@ -574,6 +663,19 @@ export default function DefectsReportsView({
           </button>
         </div>
       </div>
+
+      {/* Global Lookup Error Alert */}
+      {lookupError && (
+        <div className="mb-4 p-3 bg-red-950/70 border border-red-500/40 text-red-300 text-xs rounded-xl flex items-center justify-between animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{lookupError}</span>
+          </div>
+          <button onClick={() => setLookupError(null)} className="text-red-400 hover:text-red-200 font-bold ml-4">✕</button>
+        </div>
+      )}
 
       {/* ─── SHEET 1 VIEW: PRESCRIPTION HISTORY ───────────────────────── */}
       {activeSheet === "prescribed" && (
@@ -706,7 +808,7 @@ export default function DefectsReportsView({
       {/* ─── SHEET 2 VIEW: PREDICTED VS ACTUAL (DEFECTS) ──────────────── */}
       {activeSheet === "comparison" && (
         <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#252D3D] flex items-center justify-between bg-[#151C2C]/90">
+          <div className="px-4 py-3 border-b border-[#252D3D] flex items-center justify-between flex-wrap gap-3 bg-[#151C2C]/90">
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <span>Predicted vs Actual</span>
@@ -721,9 +823,57 @@ export default function DefectsReportsView({
                 </span>
               </p>
             </div>
-            <span className="text-[11px] font-mono font-semibold text-purple-400 bg-purple-950/40 px-2.5 py-1 rounded-md border border-purple-500/30 shrink-0">
-              Responsible: Neuriot labs
-            </span>
+
+            {/* Filter Controls for Passed and Failed Parts */}
+            <div className="flex items-center gap-3 flex-wrap text-xs">
+              {/* Recorded Inspection Filter */}
+              <div className="flex items-center gap-1 bg-[#0E131F] border border-[#252D3D] rounded-lg p-1">
+                <span className="text-[10px] text-gray-400 font-bold uppercase px-1">Recorded:</span>
+                {(["ALL", "OK", "DEFECT"] as const).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setRecordedFilter(st)}
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                      recordedFilter === st
+                        ? st === "OK"
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50"
+                          : st === "DEFECT"
+                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
+                          : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    {st === "ALL" ? "All" : st === "OK" ? "Passed (OK)" : "Failed (NG)"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Predicted Model Filter */}
+              <div className="flex items-center gap-1 bg-[#0E131F] border border-[#252D3D] rounded-lg p-1">
+                <span className="text-[10px] text-gray-400 font-bold uppercase px-1">Predicted:</span>
+                {(["ALL", "OK", "DEFECT"] as const).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setPredictedFilter(st)}
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
+                      predictedFilter === st
+                        ? st === "OK"
+                          ? "bg-purple-500/20 text-purple-300 border border-purple-500/50"
+                          : st === "DEFECT"
+                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
+                          : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    {st === "ALL" ? "All" : st === "OK" ? "Pred OK" : "Pred DEFECT"}
+                  </button>
+                ))}
+              </div>
+
+              <span className="text-[11px] font-mono font-semibold text-purple-400 bg-purple-950/40 px-2.5 py-1 rounded-md border border-purple-500/30 shrink-0">
+                Responsible: Neuriot labs
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto max-h-[560px]">
@@ -1391,6 +1541,339 @@ export default function DefectsReportsView({
           <div className="pt-1 text-[11px] text-gray-500 font-mono flex items-center justify-between border-t border-[#252D3D]/50">
             <span>Responsible: Neuriot labs</span>
             <span>Shop Floor Inspection Verification: 3 days post production</span>
+          </div>
+        </div>
+      )}
+
+      {/* ─── SHEET 4 VIEW: HOURLY MISMATCHED PARAMETERS ───────────────── */}
+      {activeSheet === "hourly" && (
+        <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-[#252D3D] flex items-center justify-between flex-wrap gap-3 bg-[#151C2C]/90">
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                <span>Hourly Mismatched Parameter Report</span>
+                <span className="text-[10px] text-amber-400 font-mono font-normal">
+                  (Hourly Time-Stamped Shift Audit)
+                </span>
+              </h3>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                Hourly tracking of casting parameter deviations, shot counts, plant rejections, and AI defect predictions.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono font-semibold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-500/30 shrink-0">
+              Audit Interval: 1 Hour (IST)
+            </span>
+          </div>
+
+          <div className="overflow-x-auto max-h-[560px]">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-[#0E131F] sticky top-0 z-20">
+                <tr className="border-b border-[#252D3D] text-[10px] text-gray-300 uppercase font-mono">
+                  <th className="px-3 py-2 font-bold bg-[#121A29]">Date</th>
+                  <th className="px-3 py-2 font-bold bg-[#121A29]">Hour Window (IST)</th>
+                  <th className="px-3 py-2 font-bold bg-[#121A29]">Machine</th>
+                  <th className="px-3 py-2 font-bold bg-[#121A29] border-r border-[#252D3D]">Die</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#152132]">Total Shots</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#251A22] text-amber-400">Mismatches (≥4 OOR)</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#251A22] text-amber-300">Mismatch Rate %</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#1E1928] text-rose-400 border-l border-[#252D3D]">Plant Defects</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#1E1928] text-purple-400">Predicted Defects</th>
+                  <th className="px-3 py-2 font-bold text-center bg-[#121A29] border-l border-[#252D3D]">Process Health</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#252D3D]/60 font-mono text-[11px]">
+                {filteredHourly.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-gray-500 font-sans">
+                      No hourly mismatch records found for this selection.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredHourly.map((row, idx) => {
+                    const isHighRisk = row.mismatch_rate_pct >= 15;
+                    const isModRisk = row.mismatch_rate_pct > 0 && row.mismatch_rate_pct < 15;
+                    return (
+                      <tr
+                        key={idx}
+                        className="hover:bg-amber-950/15 transition-colors odd:bg-[#151C2C] even:bg-[#121826]"
+                      >
+                        <td className="px-3 py-2 font-semibold text-gray-200 whitespace-nowrap">
+                          {row.date}
+                        </td>
+                        <td className="px-3 py-2 font-bold text-amber-300 whitespace-nowrap">
+                          {row.hour_window}
+                        </td>
+                        <td className="px-3 py-2 text-gray-300 whitespace-nowrap">
+                          {row.machine_id}
+                        </td>
+                        <td className="px-3 py-2 font-bold text-cyan-400 border-r border-[#252D3D] whitespace-nowrap">
+                          {row.die_id}
+                        </td>
+                        <td className="px-3 py-2 text-center font-bold text-gray-200">
+                          {row.total_shots}
+                        </td>
+                        <td className="px-3 py-2 text-center font-bold text-amber-400 bg-amber-950/10">
+                          {row.mismatched_shots}
+                        </td>
+                        <td className="px-3 py-2 text-center font-bold bg-amber-950/10">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] ${
+                              isHighRisk
+                                ? "bg-red-950/80 text-red-400 border border-red-500/30"
+                                : isModRisk
+                                ? "bg-amber-950/80 text-amber-400 border border-amber-500/30"
+                                : "bg-emerald-950/60 text-emerald-400 border border-emerald-500/30"
+                            }`}
+                          >
+                            {row.mismatch_rate_pct}%
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center border-l border-[#252D3D] font-bold text-rose-400">
+                          {row.recorded_defects}
+                        </td>
+                        <td className="px-3 py-2 text-center font-bold text-purple-400">
+                          {row.predicted_defects}
+                        </td>
+                        <td className="px-3 py-2 text-center border-l border-[#252D3D] whitespace-nowrap">
+                          {isHighRisk ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-950/70 text-red-300 border border-red-500/40">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                              CRITICAL DEVIATION
+                            </span>
+                          ) : isModRisk ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/70 text-amber-300 border border-amber-500/40">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                              ELEVATED
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/70 text-emerald-300 border border-emerald-500/40">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              NOMINAL
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─── GLOBAL PART DOSSIER MODAL ─────────────────────────────────── */}
+      {isDossierOpen && dossierPart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#151C2C] border border-[#252D3D] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-[#252D3D] flex items-center justify-between bg-[#111723]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-cyan-400">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <span>Part Dossier &amp; Direct Verification</span>
+                    <span className="text-xs px-2 py-0.5 rounded font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                      Live DB Lookup
+                    </span>
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Complete end-to-end telemetry, AI model prediction verdict, shop-floor inspection, and 23 operating parameters.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDossierOpen(false)}
+                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {!dossierPart.found ? (
+                <div className="p-8 text-center bg-[#0E131F] rounded-xl border border-[#252D3D]">
+                  <p className="text-sm text-gray-400">{dossierPart.message || "Part not found in database."}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Identification Meta Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#0E131F] p-4 rounded-xl border border-[#252D3D]">
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Part Serial ID</div>
+                      <div className="text-sm font-mono font-bold text-white mt-0.5 truncate" title={dossierPart.part_info?.id_part}>
+                        {dossierPart.part_info?.id_part || "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Customer QR</div>
+                      <div className="text-sm font-mono font-bold text-cyan-400 mt-0.5 truncate" title={dossierPart.part_info?.customer_qr}>
+                        {dossierPart.part_info?.customer_qr || "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Machine &amp; Die</div>
+                      <div className="text-xs font-semibold text-gray-200 mt-0.5">
+                        {dossierPart.part_info?.machine_id} • <span className="text-cyan-300 font-bold">{dossierPart.part_info?.die_id}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Production Stamp</div>
+                      <div className="text-xs font-mono text-gray-300 mt-0.5">
+                        {dossierPart.part_info?.manufactured_date} {dossierPart.part_info?.manufactured_time}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dual Verdict Comparison Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Model Prediction Card */}
+                    <div className="p-4 rounded-xl bg-[#131929] border border-purple-500/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-purple-300 uppercase tracking-wide">
+                          AI Model Prediction
+                        </span>
+                        <span
+                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${
+                            dossierPart.prediction?.verdict === "OK"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                              : "bg-red-500/20 text-red-300 border border-red-500/40"
+                          }`}
+                        >
+                          {dossierPart.prediction?.verdict === "OK" ? "VERDICT: OK (PASSED)" : "VERDICT: DEFECT (FAILED)"}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-gray-300 space-y-1 bg-[#0E131F] p-3 rounded-lg border border-[#252D3D]">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Parameter Health:</span>
+                          <span className="font-bold text-cyan-400">{dossierPart.prediction?.monitor_verdict || "—"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Out of Range Parameters:</span>
+                          <span className={`font-mono font-bold ${(dossierPart.prediction?.params_out_of_range ?? 0) >= 4 ? "text-amber-400" : "text-emerald-400"}`}>
+                            {dossierPart.prediction?.params_out_of_range ?? 0} / {dossierPart.prediction?.params_compared ?? 23}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Defect flags breakdown */}
+                      <div>
+                        <div className="text-[10px] text-gray-400 uppercase font-bold mb-1.5">Predicted Defect Probabilities</div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {["blow_hole", "non_filling", "porosity", "shrinkage", "chip_off", "crack"].map((defKey) => {
+                            const val = dossierPart.prediction?.defects?.[defKey] || "0";
+                            const isFlagged = val !== "0";
+                            return (
+                              <div
+                                key={defKey}
+                                className={`p-2 rounded-lg text-center border text-[11px] font-mono ${
+                                  isFlagged
+                                    ? "bg-red-950/60 border-red-500/40 text-red-300 font-bold"
+                                    : "bg-[#0E131F] border-[#252D3D] text-gray-500"
+                                }`}
+                              >
+                                <div className="text-[9px] uppercase tracking-wider text-gray-400 truncate">
+                                  {defKey.replace("_", " ")}
+                                </div>
+                                <div className="mt-0.5">{val}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Plant Inspection Verification Card */}
+                    <div className="p-4 rounded-xl bg-[#181a28] border border-rose-500/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-rose-300 uppercase tracking-wide">
+                          Shop-Floor Inspection
+                        </span>
+                        <span
+                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${
+                            dossierPart.plant_inspection?.verdict === "OK"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                              : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                          }`}
+                        >
+                          {dossierPart.plant_inspection?.verdict === "OK" ? "RECORDED: OK (PASSED)" : "RECORDED: DEFECT (NG)"}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-gray-300 bg-[#0E131F] p-3 rounded-lg border border-[#252D3D] space-y-1">
+                        <div className="text-gray-400">Confirmed Defects (Plant Verification):</div>
+                        {dossierPart.plant_inspection?.defects && dossierPart.plant_inspection.defects.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {dossierPart.plant_inspection.defects.map((def, idx) => (
+                              <span key={idx} className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-500/40">
+                                {def}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-emerald-400 font-bold pt-1">None reported (Clean Part)</div>
+                        )}
+                      </div>
+
+                      <div className="p-3 bg-[#0E131F] rounded-lg border border-[#252D3D] text-[11px] text-gray-400">
+                        <span className="text-white font-semibold">Dual-Gate Alignment: </span>
+                        {dossierPart.prediction?.verdict === dossierPart.plant_inspection?.verdict ? (
+                          <span className="text-emerald-400 font-bold">MATCH (Prediction agrees with inspection)</span>
+                        ) : (
+                          <span className="text-amber-400 font-bold">DEVIATION (Audited under post-production review)</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* All 23 Operating Parameters Table / Grid */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2">
+                        <span>Actual Operating Parameters</span>
+                        <span className="text-[10px] text-cyan-400 font-mono">(Recorded in IoT Database)</span>
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-mono">23 Core Channels</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 bg-[#0E131F] p-3 rounded-xl border border-[#252D3D]">
+                      {PARAMETERS.map((paramName) => {
+                        const val = dossierPart.parameters?.[paramName];
+                        return (
+                          <div
+                            key={paramName}
+                            className="bg-[#151C2C] border border-[#252D3D] rounded-lg p-2 flex flex-col justify-between"
+                          >
+                            <span className="text-[10px] text-gray-400 font-medium truncate" title={paramName}>
+                              {paramName}
+                            </span>
+                            <span className="text-xs font-mono font-bold text-cyan-300 mt-1">
+                              {val !== undefined && val !== null ? val : "—"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 border-t border-[#252D3D] flex justify-end bg-[#111723]">
+              <button
+                onClick={() => setIsDossierOpen(false)}
+                className="px-4 py-2 bg-[#1C2538] hover:bg-[#25324C] text-gray-200 text-xs font-bold rounded-lg border border-[#252D3D] transition-colors cursor-pointer"
+              >
+                Close Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}

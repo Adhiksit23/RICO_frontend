@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import type { ReportPreviewResponse } from "@/types";
+import type { ReportPreviewResponse, PartDossierResult, HourlyMismatchRecord } from "@/types";
 
 export interface ReportQueryParams {
   client?: string;
@@ -13,13 +13,31 @@ export interface ReportQueryParams {
 
 export const ReportService = {
   /**
-   * Fetch tabular report preview data for the 2 sheets:
+   * Fetch tabular report preview data for the 4 sheets:
    * 1. Prescription history
    * 2. Predicted vs Actual (Defects)
+   * 3. Prediction Accuracy
+   * 4. Hourly Parameter Mismatches
    */
   getPreview: (params?: ReportQueryParams): Promise<ReportPreviewResponse> =>
     axiosInstance
       .get<ReportPreviewResponse>("/api/reports/preview", { params })
+      .then((r) => r.data),
+
+  /**
+   * Global lookup of a specific part across the entire database
+   */
+  lookupPart: (query: string): Promise<PartDossierResult> =>
+    axiosInstance
+      .get<PartDossierResult>("/api/reports/part-lookup", { params: { query } })
+      .then((r) => r.data),
+
+  /**
+   * Fetch time-stamped hourly aggregated report of parameter mismatches
+   */
+  getHourlyMismatches: (params?: ReportQueryParams): Promise<HourlyMismatchRecord[]> =>
+    axiosInstance
+      .get<HourlyMismatchRecord[]>("/api/reports/mismatched-parameters/hourly", { params })
       .then((r) => r.data),
 
   /**
