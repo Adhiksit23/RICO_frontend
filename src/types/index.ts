@@ -358,6 +358,13 @@ export interface PredictionAccuracyReport {
   total_gains: number;
   total_losses: number;
   overall_accuracy_pct: number;
+  ok_accuracy_pct?: number;
+  ng_accuracy_pct?: number;
+  total_parts_evaluated?: number;
+  true_ok_count?: number;
+  true_ng_count?: number;
+  actual_ok_count?: number;
+  actual_ng_count?: number;
   breakdown: DefectAccuracyItem[];
   audit_rows: AccuracyPartAuditRow[];
 }

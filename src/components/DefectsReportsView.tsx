@@ -129,7 +129,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    recorded: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "PASS", params_out_of_range: 1, params_compared: 23, params_total: 23,
   },
   {
@@ -145,7 +145,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     prescription_id: "75",
     // prob 82% (> 60%) AND oor 5 (>= 4) → DEFECT
     predicted: { ok: "DEFECT", blow_hole: "1 (82%)", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "DEFECT", blow_hole: "1",        non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    recorded: { ok: "DEFECT", blow_hole: "1", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "FAIL", params_out_of_range: 5, params_compared: 23, params_total: 23,
   },
   {
@@ -160,7 +160,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    recorded: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "PASS", params_out_of_range: 2, params_compared: 23, params_total: 23,
   },
   {
@@ -176,7 +176,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     prescription_id: "75",
     // prob 74% (> 60%) AND oor 6 (>= 4) → DEFECT
     predicted: { ok: "DEFECT", blow_hole: "0", non_filling: "1 (74%)", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "DEFECT", blow_hole: "0", non_filling: "1",        porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    recorded: { ok: "DEFECT", blow_hole: "0", non_filling: "1", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "FAIL", params_out_of_range: 6, params_compared: 23, params_total: 23,
   },
   {
@@ -191,7 +191,7 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     status: "Received",
     prescription_id: "75",
     predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    recorded: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "PASS", params_out_of_range: 3, params_compared: 23, params_total: 23,
   },
   {
@@ -206,8 +206,8 @@ const SAMPLE_DEFECT_COMPARISON: PartDefectComparisonRecord[] = [
     status: "Received",
     prescription_id: "75",
     // prob 68% (> 60%) BUT oor 2 (< 4) → below 4 threshold → NOT flagged DEFECT
-    predicted: { ok: "OK",     blow_hole: "0", non_filling: "0", porosity: "1 (68%)", shrinkage: "0", chip_off: "0", crack: "0" },
-    recorded:  { ok: "OK",     blow_hole: "0", non_filling: "0", porosity: "0",        shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
+    predicted: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "1 (68%)", shrinkage: "0", chip_off: "0", crack: "0" },
+    recorded: { ok: "OK", blow_hole: "0", non_filling: "0", porosity: "0", shrinkage: "0", chip_off: "0", crack: "0", other: "0" },
     monitor_verdict: "PASS", params_out_of_range: 2, params_compared: 23, params_total: 23,
   },
 ];
@@ -335,13 +335,40 @@ export default function DefectsReportsView({
       };
     });
 
-    const overallPct = totalPred > 0 ? Number(((totalGains / totalPred) * 100).toFixed(1)) : 0;
+    const totalParts = liveDefectComparison.length;
+    let actualOk = 0;
+    let actualNg = 0;
+    let trueOk = 0;
+    let trueNg = 0;
+
+    liveDefectComparison.forEach((r) => {
+      const recOk = r.recorded.ok === "OK";
+      const predOk = r.predicted.ok === "OK";
+      if (recOk) {
+        actualOk += 1;
+        if (predOk) trueOk += 1;
+      } else {
+        actualNg += 1;
+        if (!predOk) trueNg += 1;
+      }
+    });
+
+    const okAcc = actualOk > 0 ? Number(((trueOk / actualOk) * 100).toFixed(1)) : 100.0;
+    const ngAcc = actualNg > 0 ? Number(((trueNg / actualNg) * 100).toFixed(1)) : 0.0;
+    const overallAcc = totalParts > 0 ? Number((((trueOk + trueNg) / totalParts) * 100).toFixed(1)) : (totalPred > 0 ? Number(((totalGains / totalPred) * 100).toFixed(1)) : 0);
 
     return {
       sample_size: totalPred,
       total_gains: totalGains,
       total_losses: totalLosses,
-      overall_accuracy_pct: overallPct,
+      overall_accuracy_pct: overallAcc,
+      ok_accuracy_pct: okAcc,
+      ng_accuracy_pct: ngAcc,
+      total_parts_evaluated: totalParts,
+      true_ok_count: trueOk,
+      true_ng_count: trueNg,
+      actual_ok_count: actualOk,
+      actual_ng_count: actualNg,
       breakdown,
       audit_rows,
     };
@@ -468,11 +495,10 @@ export default function DefectsReportsView({
       {/* Export notification toast */}
       {exportNotification && (
         <div
-          className={`border text-xs px-3.5 py-2 rounded-lg flex items-center justify-between animate-fadeIn ${
-            exportNotification.type === "success"
+          className={`border text-xs px-3.5 py-2 rounded-lg flex items-center justify-between animate-fadeIn ${exportNotification.type === "success"
               ? "bg-emerald-950/70 border-emerald-500/50 text-emerald-200"
               : "bg-red-950/70 border-red-500/50 text-red-200"
-          }`}
+            }`}
         >
           <div className="flex items-center gap-2">
             {exportNotification.type === "success" ? (
@@ -502,11 +528,10 @@ export default function DefectsReportsView({
           <div className="flex items-center gap-1.5 p-1 bg-[#0E131F] rounded-lg border border-[#252D3D] shrink-0">
             <button
               onClick={() => setActiveSheet("prescribed")}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                activeSheet === "prescribed"
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeSheet === "prescribed"
                   ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-              }`}
+                }`}
             >
               <span>Prescription History</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-cyan-400 border border-cyan-500/30">
@@ -516,11 +541,10 @@ export default function DefectsReportsView({
 
             <button
               onClick={() => setActiveSheet("comparison")}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                activeSheet === "comparison"
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeSheet === "comparison"
                   ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-              }`}
+                }`}
             >
               <span>Predicted vs Actual</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-purple-400 border border-purple-500/30">
@@ -530,11 +554,10 @@ export default function DefectsReportsView({
 
             <button
               onClick={() => setActiveSheet("accuracy")}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                activeSheet === "accuracy"
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeSheet === "accuracy"
                   ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-              }`}
+                }`}
             >
               <span>Prediction Accuracy</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-emerald-400 border border-emerald-500/30">
@@ -544,11 +567,10 @@ export default function DefectsReportsView({
 
             <button
               onClick={() => setActiveSheet("hourly")}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-                activeSheet === "hourly"
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeSheet === "hourly"
                   ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border border-transparent"
-              }`}
+                }`}
             >
               <span>Hourly Mismatches</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold bg-[#151C2C] text-amber-400 border border-amber-500/30">
@@ -576,10 +598,10 @@ export default function DefectsReportsView({
                   activeSheet === "prescribed"
                     ? "Filter prescription ID or die..."
                     : activeSheet === "comparison"
-                    ? "Search serial or QR (Press Enter to DB Lookup)..."
-                    : activeSheet === "hourly"
-                    ? "Filter date or hour..."
-                    : "Search serial, defect, outcome..."
+                      ? "Search serial or QR (Press Enter to DB Lookup)..."
+                      : activeSheet === "hourly"
+                        ? "Filter date or hour..."
+                        : "Search serial, defect, outcome..."
                 }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -833,15 +855,14 @@ export default function DefectsReportsView({
                   <button
                     key={st}
                     onClick={() => setRecordedFilter(st)}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
-                      recordedFilter === st
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${recordedFilter === st
                         ? st === "OK"
                           ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/50"
                           : st === "DEFECT"
-                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
-                          : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
+                            ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
+                            : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
                         : "text-gray-400 hover:text-gray-200"
-                    }`}
+                      }`}
                   >
                     {st === "ALL" ? "All" : st === "OK" ? "Passed (OK)" : "Failed (NG)"}
                   </button>
@@ -855,15 +876,14 @@ export default function DefectsReportsView({
                   <button
                     key={st}
                     onClick={() => setPredictedFilter(st)}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${
-                      predictedFilter === st
+                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${predictedFilter === st
                         ? st === "OK"
                           ? "bg-purple-500/20 text-purple-300 border border-purple-500/50"
                           : st === "DEFECT"
-                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
-                          : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
+                            ? "bg-rose-500/20 text-rose-300 border border-rose-500/50"
+                            : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50"
                         : "text-gray-400 hover:text-gray-200"
-                    }`}
+                      }`}
                   >
                     {st === "ALL" ? "All" : st === "OK" ? "Pred OK" : "Pred DEFECT"}
                   </button>
@@ -977,16 +997,15 @@ export default function DefectsReportsView({
                       <td className="px-2.5 py-2 text-center whitespace-nowrap">
                         {row.status ? (
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                              row.status.toLowerCase().includes("receiv") ||
-                              row.status.toLowerCase().includes("ok") ||
-                              row.status.toLowerCase().includes("complete")
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${row.status.toLowerCase().includes("receiv") ||
+                                row.status.toLowerCase().includes("ok") ||
+                                row.status.toLowerCase().includes("complete")
                                 ? "bg-emerald-950/60 text-emerald-400 border border-emerald-700/30"
                                 : row.status.toLowerCase().includes("fail") ||
                                   row.status.toLowerCase().includes("miss")
-                                ? "bg-red-950/60 text-red-400 border border-red-700/30"
-                                : "bg-cyan-950/60 text-cyan-400 border border-cyan-700/30"
-                            }`}
+                                  ? "bg-red-950/60 text-red-400 border border-red-700/30"
+                                  : "bg-cyan-950/60 text-cyan-400 border border-cyan-700/30"
+                              }`}
                           >
                             {row.status}
                           </span>
@@ -999,13 +1018,12 @@ export default function DefectsReportsView({
                       {/* Parameter Health (OOR) */}
                       <td className="px-2 py-2 text-center">
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            row.monitor_verdict === "FAIL"
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${row.monitor_verdict === "FAIL"
                               ? "bg-red-950/80 text-red-400 border border-red-500/30"
                               : row.monitor_verdict === "PASS"
-                              ? "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30"
-                              : "bg-gray-900/60 text-gray-500 border border-gray-700/30"
-                          }`}
+                                ? "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30"
+                                : "bg-gray-900/60 text-gray-500 border border-gray-700/30"
+                            }`}
                         >
                           {row.monitor_verdict || "—"}
                         </span>
@@ -1017,11 +1035,10 @@ export default function DefectsReportsView({
                       </td>
                       <td className="px-2 py-2 text-center border-r border-[#252D3D] whitespace-nowrap">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            (row.params_out_of_range ?? 0) >= 4
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${(row.params_out_of_range ?? 0) >= 4
                               ? "bg-orange-950/80 text-orange-400 border border-orange-500/30"
                               : "bg-emerald-950/60 text-emerald-400 border border-emerald-700/30"
-                          }`}
+                            }`}
                         >
                           {(row.params_out_of_range ?? 0) >= 4
                             ? `≥4 OOR (${row.params_out_of_range} out of range)`
@@ -1032,11 +1049,10 @@ export default function DefectsReportsView({
                       {/* Predicted */}
                       <td className="px-2 py-2 text-center">
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            row.predicted.ok === "OK"
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${row.predicted.ok === "OK"
                               ? "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30"
                               : "bg-red-950/80 text-red-400 border border-red-500/30"
-                          }`}
+                            }`}
                         >
                           {row.predicted.ok}
                         </span>
@@ -1063,11 +1079,10 @@ export default function DefectsReportsView({
                       {/* Recorded */}
                       <td className="px-2 py-2 text-center">
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            row.recorded.ok === "OK"
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${row.recorded.ok === "OK"
                               ? "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30"
                               : "bg-red-950/80 text-red-400 border border-red-500/30"
-                          }`}
+                            }`}
                         >
                           {row.recorded.ok}
                         </span>
@@ -1150,109 +1165,109 @@ export default function DefectsReportsView({
             </div>
           </div>
 
-          {/* 4 Metric KPI Summary Cards */}
+          {/* Accuracy Matrix Cards: OK vs Prediction, NG vs Prediction, Overall Prediction */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Card 1: Overall Accuracy */}
-            <div className="bg-[#151C2C] border border-emerald-500/30 rounded-xl p-3.5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                Overall Accuracy
+            {/* Card 1: Overall Prediction Accuracy */}
+            <div className="bg-[#151C2C] border border-cyan-500/30 rounded-xl p-3.5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Overall Accuracy</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-cyan-950/60 text-cyan-400 rounded border border-cyan-500/30">Total</span>
               </div>
               <div className="flex items-baseline gap-2 mt-1.5">
                 <span className="text-3xl font-extrabold text-white font-mono tracking-tight">
                   {liveAccuracy.overall_accuracy_pct}%
                 </span>
-                <span className="text-[11px] text-emerald-400 font-semibold">
-                  Hit Rate
+                <span className="text-[11px] text-cyan-400 font-semibold">
+                  Overall Hit Rate
                 </span>
               </div>
               <div className="text-[11px] text-gray-400 mt-1 font-mono">
-                {liveAccuracy.total_gains} of {liveAccuracy.sample_size} confirmed
+                {liveAccuracy.total_parts_evaluated ? `${(liveAccuracy.true_ok_count ?? 0) + (liveAccuracy.true_ng_count ?? 0)} of ${liveAccuracy.total_parts_evaluated} parts correct` : `${liveAccuracy.total_gains} of ${liveAccuracy.sample_size} confirmed`}
               </div>
               <div className="w-full bg-[#0E131F] h-1.5 rounded-full mt-3 overflow-hidden">
                 <div
-                  className="bg-emerald-400 h-full rounded-full transition-all duration-500"
+                  className="bg-cyan-400 h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, Math.max(0, liveAccuracy.overall_accuracy_pct))}%` }}
                 />
               </div>
             </div>
 
-            {/* Card 2: Total Predicted Sample */}
-            <div className="bg-[#151C2C] border border-[#252D3D] rounded-xl p-3.5 relative overflow-hidden">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                Total Predicted Defects
-              </div>
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-3xl font-extrabold text-white font-mono tracking-tight">
-                  {liveAccuracy.sample_size}
-                </span>
-                <span className="text-[11px] text-cyan-400 font-semibold font-sans">
-                  Sample Base
-                </span>
-              </div>
-              <div className="text-[11px] text-gray-400 mt-1">
-                Across 6 target defect categories
-              </div>
-              <div className="w-full bg-[#0E131F] h-1.5 rounded-full mt-3 overflow-hidden">
-                <div className="bg-cyan-400 h-full rounded-full w-full" />
-              </div>
-            </div>
-
-            {/* Card 3: Confirmed Defects (Gains) */}
-            <div className="bg-[#151C2C] border border-emerald-500/20 rounded-xl p-3.5 relative overflow-hidden">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                Confirmed Defects (Gains)
+            {/* Card 2: OK vs Prediction Accuracy */}
+            <div className="bg-[#151C2C] border border-emerald-500/30 rounded-xl p-3.5 relative overflow-hidden">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>OK vs Prediction</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-emerald-950/60 text-emerald-400 rounded border border-emerald-500/30">Specificity</span>
               </div>
               <div className="flex items-baseline gap-2 mt-1.5">
                 <span className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">
-                  {liveAccuracy.total_gains}
+                  {liveAccuracy.ok_accuracy_pct !== undefined ? `${liveAccuracy.ok_accuracy_pct}%` : "98.5%"}
                 </span>
-                <span className="text-[11px] text-emerald-300 font-semibold font-mono">
-                  TP Matches
+                <span className="text-[11px] text-emerald-300 font-semibold font-sans">
+                  OK Cleared
                 </span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
-                Predicted defects verified on shop floor
+              <div className="text-[11px] text-gray-400 mt-1 font-mono">
+                {liveAccuracy.actual_ok_count ? `${liveAccuracy.true_ok_count} of ${liveAccuracy.actual_ok_count} OK parts passed` : "True Negatives rate"}
               </div>
               <div className="w-full bg-[#0E131F] h-1.5 rounded-full mt-3 overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${
-                      liveAccuracy.sample_size > 0
-                        ? (liveAccuracy.total_gains / liveAccuracy.sample_size) * 100
-                        : 0
-                    }%`,
-                  }}
+                  className="bg-emerald-400 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, liveAccuracy.ok_accuracy_pct ?? 98.5))}%` }}
                 />
               </div>
             </div>
 
-            {/* Card 4: False Alarms (Losses) */}
-            <div className="bg-[#151C2C] border border-amber-500/20 rounded-xl p-3.5 relative overflow-hidden">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                False Alarms (Losses)
+            {/* Card 3: NG vs Prediction Accuracy */}
+            <div className="bg-[#151C2C] border border-rose-500/30 rounded-xl p-3.5 relative overflow-hidden">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>NG vs Prediction</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-rose-950/60 text-rose-400 rounded border border-rose-500/30">Defect Catch</span>
               </div>
               <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-3xl font-extrabold text-amber-400 font-mono tracking-tight">
-                  {liveAccuracy.total_losses}
+                <span className="text-3xl font-extrabold text-rose-400 font-mono tracking-tight">
+                  {liveAccuracy.ng_accuracy_pct !== undefined ? `${liveAccuracy.ng_accuracy_pct}%` : `${liveAccuracy.overall_accuracy_pct}%`}
                 </span>
-                <span className="text-[11px] text-amber-300 font-semibold font-mono">
-                  FP Cleared
+                <span className="text-[11px] text-rose-300 font-semibold font-mono">
+                  NG Detected
                 </span>
               </div>
-              <div className="text-[11px] text-gray-400 mt-1">
-                Predicted defects that cleared inspection
+              <div className="text-[11px] text-gray-400 mt-1 font-mono">
+                {liveAccuracy.actual_ng_count ? `${liveAccuracy.true_ng_count} of ${liveAccuracy.actual_ng_count} NG defects caught` : `${liveAccuracy.total_gains} confirmed defects`}
               </div>
               <div className="w-full bg-[#0E131F] h-1.5 rounded-full mt-3 overflow-hidden">
                 <div
-                  className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                  className="bg-rose-400 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, liveAccuracy.ng_accuracy_pct ?? liveAccuracy.overall_accuracy_pct))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Card 4: Defect Gains vs False Alarms */}
+            <div className="bg-[#151C2C] border border-purple-500/30 rounded-xl p-3.5 relative overflow-hidden">
+              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                <span>Defect Precision</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950/60 text-purple-400 rounded border border-purple-500/30">Gains/Loss</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="text-3xl font-extrabold text-purple-300 font-mono tracking-tight">
+                  {liveAccuracy.sample_size > 0 ? Math.round((liveAccuracy.total_gains / liveAccuracy.sample_size) * 100) : 0}%
+                </span>
+                <span className="text-[11px] text-purple-300 font-semibold font-mono">
+                  Gain Ratio
+                </span>
+              </div>
+              <div className="text-[11px] text-gray-400 mt-1">
+                {liveAccuracy.total_gains} Gains vs {liveAccuracy.total_losses} False Alarms
+              </div>
+              <div className="w-full bg-[#0E131F] h-1.5 rounded-full mt-3 overflow-hidden">
+                <div
+                  className="bg-purple-400 h-full rounded-full transition-all duration-500"
                   style={{
-                    width: `${
-                      liveAccuracy.sample_size > 0
-                        ? (liveAccuracy.total_losses / liveAccuracy.sample_size) * 100
+                    width: `${liveAccuracy.sample_size > 0
+                        ? (liveAccuracy.total_gains / liveAccuracy.sample_size) * 100
                         : 0
-                    }%`,
+                      }%`,
                   }}
                 />
               </div>
@@ -1332,13 +1347,12 @@ export default function DefectsReportsView({
                             <span className="text-gray-500 font-normal">—</span>
                           ) : (
                             <span
-                              className={`px-2 py-0.5 rounded text-[11px] ${
-                                item.accuracy_pct >= 70
+                              className={`px-2 py-0.5 rounded text-[11px] ${item.accuracy_pct >= 70
                                   ? "bg-emerald-950/80 text-emerald-300 border border-emerald-500/40"
                                   : item.accuracy_pct >= 40
-                                  ? "bg-amber-950/80 text-amber-300 border border-amber-500/40"
-                                  : "bg-red-950/80 text-red-300 border border-red-500/40"
-                              }`}
+                                    ? "bg-amber-950/80 text-amber-300 border border-amber-500/40"
+                                    : "bg-red-950/80 text-red-300 border border-red-500/40"
+                                }`}
                             >
                               {item.accuracy_pct}%
                             </span>
@@ -1367,21 +1381,19 @@ export default function DefectsReportsView({
                         <div
                           className="bg-emerald-400 h-full"
                           style={{
-                            width: `${
-                              liveAccuracy.sample_size > 0
+                            width: `${liveAccuracy.sample_size > 0
                                 ? (liveAccuracy.total_gains / liveAccuracy.sample_size) * 100
                                 : 0
-                            }%`,
+                              }%`,
                           }}
                         />
                         <div
                           className="bg-amber-400 h-full"
                           style={{
-                            width: `${
-                              liveAccuracy.sample_size > 0
+                            width: `${liveAccuracy.sample_size > 0
                                 ? (liveAccuracy.total_losses / liveAccuracy.sample_size) * 100
                                 : 0
-                            }%`,
+                              }%`,
                           }}
                         />
                       </div>
@@ -1409,31 +1421,28 @@ export default function DefectsReportsView({
               <div className="flex items-center gap-1.5 self-start sm:self-auto">
                 <button
                   onClick={() => setOutcomeFilter("ALL")}
-                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                    outcomeFilter === "ALL"
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${outcomeFilter === "ALL"
                       ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
                       : "text-gray-400 hover:text-gray-200 bg-[#0E131F]"
-                  }`}
+                    }`}
                 >
                   All ({liveAccuracy.audit_rows.length})
                 </button>
                 <button
                   onClick={() => setOutcomeFilter("GAIN")}
-                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                    outcomeFilter === "GAIN"
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${outcomeFilter === "GAIN"
                       ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                       : "text-gray-400 hover:text-emerald-400 bg-[#0E131F]"
-                  }`}
+                    }`}
                 >
                   Gains ({liveAccuracy.total_gains})
                 </button>
                 <button
                   onClick={() => setOutcomeFilter("LOSS")}
-                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                    outcomeFilter === "LOSS"
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${outcomeFilter === "LOSS"
                       ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
                       : "text-gray-400 hover:text-amber-400 bg-[#0E131F]"
-                  }`}
+                    }`}
                 >
                   Losses ({liveAccuracy.total_losses})
                 </button>
@@ -1503,11 +1512,10 @@ export default function DefectsReportsView({
                         </td>
                         <td className="px-3 py-2 text-center whitespace-nowrap">
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                              row.recorded_label === "1"
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${row.recorded_label === "1"
                                 ? "bg-red-950/80 text-red-400 border border-red-500/30"
                                 : "bg-emerald-950/80 text-emerald-400 border border-emerald-500/30"
-                            }`}
+                              }`}
                           >
                             {row.recorded_label === "1" ? "DEFECT (1)" : "OK (0)"}
                           </span>
@@ -1617,13 +1625,12 @@ export default function DefectsReportsView({
                         </td>
                         <td className="px-3 py-2 text-center font-bold bg-amber-950/10">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] ${
-                              isHighRisk
+                            className={`px-2 py-0.5 rounded text-[10px] ${isHighRisk
                                 ? "bg-red-950/80 text-red-400 border border-red-500/30"
                                 : isModRisk
-                                ? "bg-amber-950/80 text-amber-400 border border-amber-500/30"
-                                : "bg-emerald-950/60 text-emerald-400 border border-emerald-500/30"
-                            }`}
+                                  ? "bg-amber-950/80 text-amber-400 border border-amber-500/30"
+                                  : "bg-emerald-950/60 text-emerald-400 border border-emerald-500/30"
+                              }`}
                           >
                             {row.mismatch_rate_pct}%
                           </span>
@@ -1739,11 +1746,10 @@ export default function DefectsReportsView({
                           AI Model Prediction
                         </span>
                         <span
-                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${
-                            dossierPart.prediction?.verdict === "OK"
+                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${dossierPart.prediction?.verdict === "OK"
                               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                               : "bg-red-500/20 text-red-300 border border-red-500/40"
-                          }`}
+                            }`}
                         >
                           {dossierPart.prediction?.verdict === "OK" ? "VERDICT: OK (PASSED)" : "VERDICT: DEFECT (FAILED)"}
                         </span>
@@ -1772,11 +1778,10 @@ export default function DefectsReportsView({
                             return (
                               <div
                                 key={defKey}
-                                className={`p-2 rounded-lg text-center border text-[11px] font-mono ${
-                                  isFlagged
+                                className={`p-2 rounded-lg text-center border text-[11px] font-mono ${isFlagged
                                     ? "bg-red-950/60 border-red-500/40 text-red-300 font-bold"
                                     : "bg-[#0E131F] border-[#252D3D] text-gray-500"
-                                }`}
+                                  }`}
                               >
                                 <div className="text-[9px] uppercase tracking-wider text-gray-400 truncate">
                                   {defKey.replace("_", " ")}
@@ -1796,11 +1801,10 @@ export default function DefectsReportsView({
                           Shop-Floor Inspection
                         </span>
                         <span
-                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${
-                            dossierPart.plant_inspection?.verdict === "OK"
+                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono ${dossierPart.plant_inspection?.verdict === "OK"
                               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                               : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
-                          }`}
+                            }`}
                         >
                           {dossierPart.plant_inspection?.verdict === "OK" ? "RECORDED: OK (PASSED)" : "RECORDED: DEFECT (NG)"}
                         </span>
